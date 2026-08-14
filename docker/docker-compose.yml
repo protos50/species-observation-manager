@@ -1,0 +1,141 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: animal_register_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - database_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Puerto NO expuesto al host por seguridad - usar docker exec para acceso directo
+
+  backend:
+    build:
+      context: ../BackendAPI
+      dockerfile: ../docker/backend/Dockerfile
+    container_name: animal_register_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      jwtSecretKey: ${JWT_SECRET_KEY}
+      jwtRefreshToken: ${JWT_REFRESH_TOKEN}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      PORT: 4000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend_network
+      - database_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/api/auth/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    volumes:
+      - backend_logs:/var/log/backend
+
+  frontend:
+    build:
+      context: ../proyecto
+      dockerfile: ../docker/frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /api
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+    container_name: animal_register_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXTAUTH_URL: http://localhost
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: ${AUTH_URL}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
+      # Para que el código server-side también pase por nginx (más seguro y consistente)
+      API_BASE_URL_SERVER: http://nginx/api
+      NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+    depends_on:
+      - backend
+    networks:
+      - frontend_network
+    volumes:
+      - frontend_logs:/var/log/frontend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: animal_register_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - frontend_network
+      - backend_network
+    volumes:
+      - nginx_logs:/var/log/nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  frontend_network:
+    driver: bridge
+    name: animal_register_frontend
+  backend_network:
+    driver: bridge
+    name: animal_register_backend
+  database_network:
+    driver: bridge
+    name: animal_register_database
+    internal: true
+
+volumes:
+  postgres_data:
+    driver: local
+    name: animal_register_postgres_data
+  nginx_logs:
+    driver: local
+    name: animal_register_nginx_logs
+  backend_logs:
+    driver: local
+    name: animal_register_backend_logs
+  frontend_logs:
+    driver: local
+    name: animal_register_frontend_logs

@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Rol {
+  role_id     Int       @id(map: "pk_rol") @default(autoincrement())
+  name        String    @unique(map: "uq_rol_name") @db.VarChar(20)
+  description String?   @db.VarChar(255)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  User        User[]
+}
+
+model User {
+  user_id    Int       @id(map: "pk_user") @default(autoincrement())
+  first_name String    @db.VarChar(100)
+  last_name  String    @db.VarChar(30)
+  email      String    @unique(map: "uq_user_email") @db.VarChar(100)
+  password   String    @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  role_id    Int
+  role       Rol       @relation(fields: [role_id], references: [role_id], map: "fk_user_rol")
+}
+
+model TaxonomicLevel {
+  id_taxonomic_level Int       @id(map: "pk_taxonomic_level") @default(autoincrement())
+  name               String    @unique @db.VarChar(50)
+  deleted_at         DateTime? @db.Timestamptz(6)
+  Taxon              Taxon[]
+}
+
+model Author {
+  id_author   Int       @id(map: "pk_author") @default(autoincrement())
+  author_name String    @db.VarChar(100)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  Taxon       Taxon[]
+}
+
+model Taxon {
+  id_taxon           Int            @id(map: "pk_taxon") @default(autoincrement())
+  name               String
+  id_taxonomic_level Int
+  parent_id          Int?
+  id_author          Int?
+  description_year   Int?
+  deleted_at         DateTime?      @db.Timestamptz(6)
+  Observation        Observation[]
+  author             Author?        @relation(fields: [id_author], references: [id_author], map: "fk_taxon_author")
+  parent             Taxon?         @relation("TaxonToTaxon", fields: [parent_id], references: [id_taxon], map: "fk_taxon_parent")
+  children           Taxon[]        @relation("TaxonToTaxon")
+  taxonomic_level    TaxonomicLevel @relation(fields: [id_taxonomic_level], references: [id_taxonomic_level], map: "fk_taxon_taxonomic_level")
+}
+
+model Environment {
+  id_environment   Int           @id(map: "pk_environment") @default(autoincrement())
+  environment_name String
+  deleted_at       DateTime?     @db.Timestamptz(6)
+  Observation      Observation[]
+}
+
+model Caste {
+  id_caste    Int           @id(map: "pk_caste") @default(autoincrement())
+  caste_name  String        @db.VarChar(50)
+  deleted_at  DateTime?     @db.Timestamptz(6)
+  Observation Observation[]
+}
+
+model Trap {
+  id_trap    Int          @id(map: "pk_trap") @default(autoincrement())
+  trap_name  String
+  deleted_at DateTime?    @db.Timestamptz(6)
+  Collection Collection[]
+}
+
+model PreservationMethod {
+  id_preservation_method Int          @id(map: "pk_preservation_method") @default(autoincrement())
+  method_name            String
+  deleted_at             DateTime?    @db.Timestamptz(6)
+  Collection             Collection[]
+}
+
+model Person {
+  id_person              Int           @id(map: "pk_person") @default(autoincrement())
+  person_name            String
+  person_lastname        String
+  deleted_at             DateTime?     @db.Timestamptz(6)
+  Collection             Collection[]
+  IdentifiedObservations Observation[] @relation("Identifier")
+  ConfirmedObservations  Observation[] @relation("Confirmer")
+}
+
+model Country {
+  id_country   Int        @id(map: "pk_country") @default(autoincrement())
+  country_name String
+  deleted_at   DateTime?  @db.Timestamptz(6)
+  Province     Province[]
+}
+
+model Province {
+  id_province   Int          @id(map: "pk_province") @default(autoincrement())
+  id_country    Int
+  province_name String
+  deleted_at    DateTime?    @db.Timestamptz(6)
+  Department    Department[]
+  country       Country      @relation(fields: [id_country], references: [id_country], map: "fk_province_country")
+}
+
+model Department {
+  id_department   Int        @id(map: "pk_department") @default(autoincrement())
+  id_province     Int
+  department_name String
+  deleted_at      DateTime?  @db.Timestamptz(6)
+  province        Province   @relation(fields: [id_province], references: [id_province], map: "fk_department_province")
+  Locality        Locality[]
+}
+
+model Locality {
+  id_locality   Int           @id(map: "pk_locality") @default(autoincrement())
+  id_department Int
+  locality_name String
+  deleted_at    DateTime?     @db.Timestamptz(6)
+  ClimateData   ClimateData[]
+  Geolocation   Geolocation[]
+  department    Department    @relation(fields: [id_department], references: [id_department], map: "fk_locality_department")
+}
+
+model Geolocation {
+  id_geolocation    Int           @id(map: "pk_geolocation") @default(autoincrement())
+  latitude          Float
+  longitude         Float
+  altitude          Float?
+  source_type       String
+  tag               String?
+  ihh               Float?
+  distance_to_river Float?
+  id_locality       Int
+  deleted_at        DateTime?     @db.Timestamptz(6)
+  locality          Locality      @relation(fields: [id_locality], references: [id_locality], map: "fk_geolocation_locality")
+  Observation       Observation[]
+}
+
+model ClimateData {
+  id_climate_data   Int           @id(map: "pk_climate_data") @default(autoincrement())
+  id_locality       Int
+  climate_date      DateTime      @db.Date
+  t_min             Float?
+  t_max             Float?
+  t_med             Float?
+  hr_min            Float?
+  hr_max            Float?
+  hr_med            Float?
+  pp_14_days_before Float?
+  pp_30_days_before Float?
+  deleted_at        DateTime?     @db.Timestamptz(6)
+  locality          Locality      @relation(fields: [id_locality], references: [id_locality], map: "fk_climate_data_locality")
+  Observation       Observation[]
+
+  @@unique([id_locality, climate_date], map: "unique_climate_data_locality_date")
+}
+
+model Collection {
+  id_collection          Int                @id(map: "pk_collection") @default(autoincrement())
+  id_person              Int
+  id_preservation_method Int
+  id_trap                Int
+  collection_date        DateTime           @db.Date
+  trap_number            Int?
+  deleted_at             DateTime?          @db.Timestamptz(6)
+  person                 Person             @relation(fields: [id_person], references: [id_person], map: "fk_collection_person")
+  preservation_method    PreservationMethod @relation(fields: [id_preservation_method], references: [id_preservation_method], map: "fk_collection_preservation_method")
+  trap                   Trap               @relation(fields: [id_trap], references: [id_trap], map: "fk_collection_trap")
+  Observation            Observation[]
+}
+
+model Observation {
+  id_observation       Int          @id(map: "pk_observation") @default(autoincrement())
+  id_taxon             Int
+  id_collection        Int
+  id_geolocation       Int
+  id_environment       Int?
+  id_caste             Int?
+  id_climate_data      Int?
+  abundance            Int?
+  deleted_at           DateTime?    @db.Timestamptz(6)
+  id_identifier        Int?
+  identification_date  DateTime?    @db.Date
+  id_confirmer         Int?
+  confirmation_date    DateTime?    @db.Date
+  biology_notes        String?
+  general_observations String?
+  conservation_status  String?      @db.VarChar(50)
+  caste                Caste?       @relation(fields: [id_caste], references: [id_caste], map: "fk_observation_caste")
+  climate_data         ClimateData? @relation(fields: [id_climate_data], references: [id_climate_data], map: "fk_observation_climate_data")
+  collection           Collection   @relation(fields: [id_collection], references: [id_collection], map: "fk_observation_collection")
+  environment          Environment? @relation(fields: [id_environment], references: [id_environment], map: "fk_observation_environment")
+  geolocation          Geolocation  @relation(fields: [id_geolocation], references: [id_geolocation], map: "fk_observation_geolocation")
+  identifier           Person?      @relation("Identifier", fields: [id_identifier], references: [id_person], map: "fk_observation_identifier")
+  confirmer            Person?      @relation("Confirmer", fields: [id_confirmer], references: [id_person], map: "fk_observation_confirmer")
+  taxon                Taxon        @relation(fields: [id_taxon], references: [id_taxon], map: "fk_observation_taxon")
+}
+
+model Service {
+  id_service   Int       @id(map: "pk_service") @default(autoincrement())
+  service_name String    @db.VarChar(100)
+  deleted_at   DateTime? @db.Timestamptz(6)
+  Contact      Contact[]
+}
+
+model Contact {
+  id_contact Int       @id(map: "pk_contact") @default(autoincrement())
+  name       String    @db.VarChar(100)
+  email      String    @db.VarChar(100)
+  message    String
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  status     Boolean   @default(false)
+  id_service Int
+  service    Service   @relation(fields: [id_service], references: [id_service], map: "fk_contact_service")
+}

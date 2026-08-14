@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: animal_register_db_dev
+    restart: unless-stopped
+    environment:
+      # Puedes sobreescribir estos valores con --env-file o variables de entorno
+      POSTGRES_DB: ${POSTGRES_DB:-animal_register}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      # Cambia el puerto si ya tienes otro Postgres corriendo en 5432
+      - "5432:5432"
+    volumes:
+      # Volumen nombrado administrado por Docker para los datos reales
+      - postgres_data_dev:/var/lib/postgresql/data
+      # Script de inicialización desde tu backup SQL
+      # Se ejecuta solo la PRIMERA vez que se crea el volumen
+      - ../../BackendAPI/db_backups/restore.sql:/docker-entrypoint-initdb.d/01-restore.sql:ro
+
+volumes:
+  postgres_data_dev:
+    driver: local
+    name: animal_register_postgres_data_dev
