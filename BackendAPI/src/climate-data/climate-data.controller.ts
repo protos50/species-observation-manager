@@ -2,7 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { ClimateDataService } from './climate-data.service';
 import { CreateClimateDatumDto } from './dto/create-climate-datum.dto';
 import { UpdateClimateDatumDto } from './dto/update-climate-datum.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('climate-data')
+@ApiBearerAuth()
 @Controller('climate-data')
 export class ClimateDataController {
   constructor(private readonly climateDataService: ClimateDataService) {}

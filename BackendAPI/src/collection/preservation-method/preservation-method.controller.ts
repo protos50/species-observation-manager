@@ -10,7 +10,10 @@ import {
 import { PreservationMethodService } from './preservation-method.service';
 import { CreatePreservationMethodDto } from './dto/create-preservation-method.dto';
 import { UpdatePreservationMethodDto } from './dto/update-preservation-method.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('preservation-method')
+@ApiBearerAuth()
 @Controller('preservation-method')
 export class PreservationMethodController {
   constructor(

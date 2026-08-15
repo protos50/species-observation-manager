@@ -10,7 +10,10 @@ import {
 import { CasteService } from './caste.service';
 import { CreateCasteDto } from './dto/create-caste.dto';
 import { UpdateCasteDto } from './dto/update-caste.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('caste')
+@ApiBearerAuth()
 @Controller('caste')
 export class CasteController {
   constructor(private readonly casteService: CasteService) {}

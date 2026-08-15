@@ -1,4 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
@@ -21,6 +22,16 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('api');
+
+  // Documentacion OpenAPI / Swagger UI, disponible en /api/docs
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Species Observation Manager API')
+    .setDescription('API REST para el registro y gestion de datos taxonomicos del Laboratorio de Zoologia Agricola (FaCENA - UNNE).')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, swaggerDocument);
   
   // Apply JWT authentication guard globally
   const reflector = app.get(Reflector);

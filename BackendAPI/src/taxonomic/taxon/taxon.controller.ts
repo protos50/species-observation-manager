@@ -2,7 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { TaxonService } from './taxon.service';
 import { CreateTaxonDto } from './dto/create-taxon.dto';
 import { UpdateTaxonDto } from './dto/update-taxon.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('taxon')
+@ApiBearerAuth()
 @Controller('taxon')
 export class TaxonController {
   constructor(private readonly taxonService: TaxonService) {}

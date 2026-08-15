@@ -3,7 +3,10 @@ import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { Public } from '../auth/decorators/public.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('contact')
+@ApiBearerAuth()
 @Controller('contact')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}

@@ -16,7 +16,10 @@ import { CreateCollectionObservationDto } from './dto/create-collection-observat
 import { SearchObservationDto } from './dto/search-observation.dto';
 import { ExportCsvDto } from './dto/export-csv.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('observation')
+@ApiBearerAuth()
 @Controller('observation')
 export class ObservationController {
   constructor(private readonly observationService: ObservationService) {}

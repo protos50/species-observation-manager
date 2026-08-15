@@ -1,6 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { StatsService } from './stats.service';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('stats')
+@ApiBearerAuth()
 @Controller('stats')
 export class StatsController {
   constructor(private readonly statsService: StatsService) {}

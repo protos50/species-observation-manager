@@ -10,7 +10,10 @@ import {
 import { TaxonomicLevelService } from './taxonomic-level.service';
 import { CreateTaxonomicLevelDto } from './dto/create-taxonomic-level.dto';
 import { UpdateTaxonomicLevelDto } from './dto/update-taxonomic-level.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('taxonomic-level')
+@ApiBearerAuth()
 @Controller('taxonomic-level')
 export class TaxonomicLevelController {
   constructor(private readonly taxonomicLevelService: TaxonomicLevelService) {}

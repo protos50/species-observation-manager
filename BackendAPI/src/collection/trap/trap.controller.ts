@@ -10,7 +10,10 @@ import {
 import { TrapService } from './trap.service';
 import { CreateTrapDto } from './dto/create-trap.dto';
 import { UpdateTrapDto } from './dto/update-trap.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('trap')
+@ApiBearerAuth()
 @Controller('trap')
 export class TrapController {
   constructor(private readonly trapService: TrapService) {}

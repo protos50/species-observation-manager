@@ -3,7 +3,10 @@ import { GeolocationService } from './geolocation.service';
 import { Geolocation } from '@prisma/client';
 import { CreateGeolocationDto } from './dto/create-geolocation.dto';
 import { UpdateGeolocationDto } from './dto/update-geolocation.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('geolocation')
+@ApiBearerAuth()
 @Controller('geolocation')
 export class GeolocationController {
   constructor(private readonly geolocationService: GeolocationService) {}
