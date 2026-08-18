@@ -7,16 +7,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class PreservationMethodService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un método de preservación.
   create(createPreservationMethodDto: CreatePreservationMethodDto) {
     return this.prismaService.preservationMethod.create({
       data: createPreservationMethodDto,
     });
   }
 
+  // Lista los métodos de preservación activos.
   findAll() {
     return this.prismaService.preservationMethod.findMany();
   }
 
+  // Lista los métodos de preservación que fueron dados de baja.
   findDeleted() {
     return (this.prismaService.preservationMethod.findMany as any)({
       where: {
@@ -28,6 +31,7 @@ export class PreservationMethodService {
     });
   }
 
+  // Busca un método de preservación por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const method = await this.prismaService.preservationMethod.findUnique({
       where: { id_preservation_method: id },
@@ -45,6 +49,7 @@ export class PreservationMethodService {
     return method;
   }
 
+  // Actualiza los datos de un método de preservación.
   async update(
     id: number,
     updatePreservationMethodDto: UpdatePreservationMethodDto,
@@ -61,6 +66,7 @@ export class PreservationMethodService {
     }
   }
 
+  // Da de baja un método de preservación. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.preservationMethod.delete({
@@ -73,6 +79,7 @@ export class PreservationMethodService {
     }
   }
 
+  // Vuelve a activar un método de preservación que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.preservationMethod.update as any)({
@@ -87,8 +94,9 @@ export class PreservationMethodService {
     }
   }
 
+  // Avisa si el método de preservación está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
-    // Find collections using this preservation method
+    // Busca colecciones que estén usando este método
     const collections = await this.prismaService.collection.findMany({
       where: {
         id_preservation_method: id,

@@ -5,9 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class StatsService {
   constructor(private prisma: PrismaService) {}
 
-  /**
-   * Obtiene todas las estadísticas del dashboard en una sola llamada
-   */
+  // Junta los números que muestra el panel principal.
   async getDashboardStats() {
     // Ejecutar todas las queries en paralelo para mejor performance
     const [taxonomy, environments, commonSpecies, byCountry] =
@@ -26,9 +24,7 @@ export class StatsService {
     };
   }
 
-  /**
-   * Estadísticas de taxonomía: subfamilias, géneros, especies
-   */
+  // Cuenta cuántos taxones hay en cada nivel de la clasificación.
   async getTaxonomyStats() {
     // Primero obtener todos los niveles para debugging
     const allLevels = await this.prisma.taxonomicLevel.findMany();
@@ -99,9 +95,7 @@ export class StatsService {
     };
   }
 
-  /**
-   * Estadísticas de ambientes para gráfico de torta
-   */
+  // Cuenta las observaciones agrupadas por tipo de ambiente.
   async getEnvironmentStats() {
     // Contar observaciones agrupadas por ambiente
     const result = await this.prisma.observation.groupBy({
@@ -146,9 +140,7 @@ export class StatsService {
     return stats.sort((a, b) => b.count - a.count);
   }
 
-  /**
-   * Especies más comunes para gráfico de barras
-   */
+  // Arma el ranking de las especies más observadas.
   async getCommonSpecies(limit: number = 10) {
     // Agrupar observaciones por taxón
     const result = await this.prisma.observation.groupBy({
@@ -188,9 +180,7 @@ export class StatsService {
     });
   }
 
-  /**
-   * Estadísticas por país y provincia para el mapa interactivo
-   */
+  // Totales agrupados por país.
   async getStatsByCountry() {
     // Obtener todas las observaciones con su localidad, provincia y país
     const observations = await this.prisma.observation.findMany({
@@ -282,9 +272,7 @@ export class StatsService {
       .sort((a, b) => b.count - a.count);
   }
 
-  /**
-   * Estadísticas detalladas de una provincia específica
-   */
+  // Totales de una provincia: departamentos, localidades y observaciones.
   async getProvinceStats(provinceName: string) {
     // 1. Buscar la provincia
     const province = await this.prisma.province.findFirst({
@@ -409,9 +397,7 @@ export class StatsService {
     };
   }
 
-  /**
-   * Top 5 localidades con más observaciones en una provincia específica
-   */
+  // Las localidades con más registros dentro de una provincia.
   async getTopLocalitiesByProvince(provinceName: string) {
     const observations = await this.prisma.observation.findMany({
       where: {

@@ -6,6 +6,7 @@ import { Geolocation } from '@prisma/client';
 export class GeolocationService {
   constructor(private prisma: PrismaService) {}
 
+  // Da de alta una geolocalización.
   async create(data: {
     latitude: number;
     longitude: number;
@@ -38,6 +39,7 @@ export class GeolocationService {
     });
   }
 
+  // Lista las geolocalizaciones activas.
   async findAll(): Promise<Geolocation[]> {
     return this.prisma.geolocation.findMany({
       include: {
@@ -61,6 +63,7 @@ export class GeolocationService {
     });
   }
 
+  // Busca una geolocalización por id; si no lo encuentra, responde 404.
   async findOne(id: number): Promise<Geolocation | null> {
     return this.prisma.geolocation.findUnique({
       where: { id_geolocation: id },
@@ -82,6 +85,7 @@ export class GeolocationService {
     });
   }
 
+  // Busca geolocalizaciones que caigan en unas coordenadas exactas.
   async findByCoordinates(latitude: number, longitude: number): Promise<Geolocation[]> {
     return this.prisma.geolocation.findMany({
       where: {
@@ -91,6 +95,7 @@ export class GeolocationService {
     });
   }
 
+  // Busca geolocalizaciones por su etiqueta, el nombre corto con el que las identifica el equipo.
   async findByTag(tag: string): Promise<Geolocation[]> {
     return this.prisma.geolocation.findMany({
       where: {
@@ -120,6 +125,7 @@ export class GeolocationService {
     });
   }
 
+  // Actualiza los datos de una geolocalización.
   async update(id: number, data: {
     latitude?: number;
     longitude?: number;
@@ -151,6 +157,7 @@ export class GeolocationService {
     });
   }
 
+  // Da de baja una geolocalización. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number): Promise<Geolocation> {
     return this.prisma.geolocation.update({
       where: { id_geolocation: id },
@@ -158,6 +165,7 @@ export class GeolocationService {
     });
   }
 
+  // Avisa si la geolocalización está enganchada a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     const observations = await this.prisma.observation.findMany({
       where: {
@@ -189,6 +197,7 @@ export class GeolocationService {
     };
   }
 
+  // Lista las geolocalizaciones que fueron dadas de baja.
   async findDeleted() {
     return await (this.prisma.geolocation as any).findMany({
       withDeleted: true,
@@ -229,6 +238,7 @@ export class GeolocationService {
     });
   }
 
+  // Vuelve a activar una geolocalización que estaba dada de baja.
   async restore(id: number) {
     try {
       return await (this.prisma.geolocation as any).update({

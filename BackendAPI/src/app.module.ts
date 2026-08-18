@@ -26,7 +26,7 @@ import { StatsModule } from './stats/stats.module';
       envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
     }),
     
-    // Authentication and users
+    // Autenticacion y usuarios
     UsersModule, 
     RolModule, 
     AuthModule,

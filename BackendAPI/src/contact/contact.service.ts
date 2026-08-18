@@ -7,6 +7,7 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 export class ContactService {
   constructor(private prisma: PrismaService) {}
 
+  // Da de alta un mensaje de contacto.
   async create(createContactDto: CreateContactDto) {
     // Verify service exists (middleware filters deleted_at = null)
     const service = await this.prisma.service.findUnique({
@@ -25,6 +26,7 @@ export class ContactService {
     });
   }
 
+  // Lista los mensajes de contacto activos.
   async findAll(status?: boolean) {
     // Middleware automatically filters deleted_at = null
     return await this.prisma.contact.findMany({
@@ -40,6 +42,7 @@ export class ContactService {
     });
   }
 
+  // Trae los mensajes que llegaron por un servicio puntual.
   async findByService(serviceId: number) {
     // Middleware automatically filters deleted_at = null
     return await this.prisma.contact.findMany({
@@ -55,6 +58,7 @@ export class ContactService {
     });
   }
 
+  // Busca un mensaje de contacto por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     // Middleware automatically filters deleted_at = null
     const contact = await this.prisma.contact.findUnique({
@@ -71,6 +75,7 @@ export class ContactService {
     return contact;
   }
 
+  // Actualiza los datos de un mensaje de contacto.
   async update(id: number, updateContactDto: UpdateContactDto) {
     await this.findOne(id); // Validate existence
     
@@ -83,6 +88,7 @@ export class ContactService {
     });
   }
 
+  // Marca un mensaje como leído.
   async markAsRead(id: number) {
     await this.findOne(id); // Validate existence
     
@@ -97,10 +103,11 @@ export class ContactService {
     });
   }
 
+  // Da de baja un mensaje de contacto. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     await this.findOne(id); // Validate existence
     
-    // Soft delete: middleware converts delete to update with deleted_at
+    // Baja lógica: el middleware convierte el delete en un update con deleted_at
     return await this.prisma.contact.delete({
       where: { id_contact: id },
     });

@@ -8,16 +8,19 @@ export class RolService {
 
   constructor(private prismaService: PrismaService){}
 
+  // Da de alta un rol.
   create(createRolDto: CreateRolDto) {
     return this.prismaService.rol.create({
       data: createRolDto,
     });
   }
 
+  // Lista los roles activos.
   findAll() {
     return this.prismaService.rol.findMany();
   }
 
+  // Busca un rol por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const rolFound = await this.prismaService.rol.findUnique({
       where: { role_id: id },
@@ -28,6 +31,7 @@ export class RolService {
     return rolFound;
   }
 
+  // Actualiza los datos de un rol.
   async update(id: number, updateRolDto: UpdateRolDto) {
     const updatedRol = await this.prismaService.rol.update({
       where: { role_id: id },
@@ -39,6 +43,7 @@ export class RolService {
     return updatedRol;
   }
   
+  // Da de baja un rol. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     const deletedRol = await this.prismaService.rol.delete({
       where: { role_id: id },

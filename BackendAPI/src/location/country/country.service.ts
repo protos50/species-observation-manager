@@ -7,16 +7,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CountryService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un país.
   create(createCountryDto: CreateCountryDto) {
     return this.prismaService.country.create({
       data: createCountryDto,
     });
   }
 
+  // Lista los países activos.
   findAll() {
     return this.prismaService.country.findMany();
   }
 
+  // Busca un país por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const country = await this.prismaService.country.findUnique({
       where: { id_country: id },
@@ -32,6 +35,7 @@ export class CountryService {
     return country;
   }
 
+  // Actualiza los datos de un país.
   async update(id: number, updateCountryDto: UpdateCountryDto) {
     try {
       return await this.prismaService.country.update({
@@ -43,6 +47,7 @@ export class CountryService {
     }
   }
 
+  // Da de baja un país. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.country.delete({
@@ -53,8 +58,9 @@ export class CountryService {
     }
   }
 
+  // Avisa si el país está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
-    // Get provinces for this country
+    // Trae las provincias de este país
     const provinces = await this.prismaService.province.findMany({
       where: {
         id_country: id,
@@ -81,7 +87,7 @@ export class CountryService {
       },
     });
 
-    // Count total observations through the hierarchy
+    // Cuenta el total de observaciones que cuelgan de toda la jerarquía
     const observations = await this.prismaService.observation.findMany({
       where: {
         deleted_at: null,
@@ -124,6 +130,7 @@ export class CountryService {
     };
   }
 
+  // Lista los países que fueron dados de baja.
   async findDeleted() {
     return await (this.prismaService.country as any).findMany({
       withDeleted: true,
@@ -146,6 +153,7 @@ export class CountryService {
     });
   }
 
+  // Vuelve a activar un país que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.country as any).update({

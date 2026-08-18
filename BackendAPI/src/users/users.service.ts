@@ -14,6 +14,7 @@ export class UsersService {
     return await bcrypt.hash(password, saltRounds);
   }
 
+  // Da de alta un usuario.
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await this.hashPassword(createUserDto.password);
     return this.prismaService.user.create({
@@ -24,6 +25,7 @@ export class UsersService {
     });
   }
 
+  // Lista los usuarios activos.
   findAll() {
     // Middleware automatically filters deleted_at = null
     return this.prismaService.user.findMany({
@@ -33,6 +35,7 @@ export class UsersService {
     });
   }
 
+  // Lista los usuarios que fueron dados de baja.
   findDeleted() {
     // Include soft-deleted users (use withDeleted flag)
     return (this.prismaService.user.findMany as any)({
@@ -48,6 +51,7 @@ export class UsersService {
     });
   }
 
+  // Busca un usuario por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const user = await this.prismaService.user.findUnique({
       where: { user_id: id },
@@ -61,11 +65,12 @@ export class UsersService {
     return user;
   }
 
+  // Actualiza los datos de un usuario.
   async update(id: number, updateUserDto: UpdateUserDto) {
     try {
       const dataToUpdate = { ...updateUserDto };
       
-      // Hash password if it's being updated
+      // Si viene contraseña nueva, la guarda hasheada
       if (updateUserDto.password) {
         dataToUpdate.password = await this.hashPassword(updateUserDto.password);
       }
@@ -79,8 +84,9 @@ export class UsersService {
     }
   }
 
+  // Da de baja un usuario. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
-    // Soft delete: middleware converts delete to update with deleted_at
+    // Baja lógica: el middleware convierte el delete en un update con deleted_at
     try {
       return await this.prismaService.user.delete({
         where: { user_id: id },
@@ -90,6 +96,7 @@ export class UsersService {
     }
   }
 
+  // Vuelve a activar un usuario que estaba dado de baja.
   async restore(id: number) {
     // Restore a previously soft-deleted user
     try {
@@ -103,6 +110,7 @@ export class UsersService {
     }
   }
 
+  // Busca un usuario por su mail. Lo usa el login.
   async findByEmail(email: string) {
     const user = await this.prismaService.user.findUnique({
       where: { email },

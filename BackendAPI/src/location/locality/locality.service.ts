@@ -7,12 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class LocalityService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta una localidad.
   create(createLocalityDto: CreateLocalityDto) {
     return this.prismaService.locality.create({
       data: createLocalityDto,
     });
   }
 
+  // Lista las localidades activas.
   async findAll() {
     const localities = await this.prismaService.locality.findMany({
       where: {
@@ -63,6 +65,7 @@ export class LocalityService {
     return localitiesWithObservationCount;
   }
 
+  // Lista las localidades de un departamento.
   async findByDepartment(departmentId: number) {
     const localities = await this.prismaService.locality.findMany({
       where: {
@@ -114,6 +117,7 @@ export class LocalityService {
     return localitiesWithObservationCount;
   }
 
+  // Busca una localidad por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const locality = await this.prismaService.locality.findUnique({
       where: { id_locality: id },
@@ -150,6 +154,7 @@ export class LocalityService {
     return locality;
   }
 
+  // Actualiza los datos de una localidad.
   async update(id: number, updateLocalityDto: UpdateLocalityDto) {
     try {
       return await this.prismaService.locality.update({
@@ -161,6 +166,7 @@ export class LocalityService {
     }
   }
 
+  // Da de baja una localidad. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.locality.delete({
@@ -171,6 +177,7 @@ export class LocalityService {
     }
   }
 
+  // Avisa si la localidad está enganchada a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     const [geolocations, climateData, observations] = await Promise.all([
       this.prismaService.geolocation.findMany({
@@ -232,6 +239,7 @@ export class LocalityService {
     };
   }
 
+  // Lista las localidades que fueron dadas de baja.
   async findDeleted() {
     return await (this.prismaService.locality as any).findMany({
       withDeleted: true,
@@ -277,6 +285,7 @@ export class LocalityService {
     });
   }
 
+  // Vuelve a activar una localidad que estaba dada de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.locality as any).update({

@@ -7,12 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class PersonService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta una persona.
   create(createPersonDto: CreatePersonDto) {
     return this.prismaService.person.create({
       data: createPersonDto,
     });
   }
 
+  // Lista las personas activas.
   findAll() {
     return this.prismaService.person.findMany({
       include: {
@@ -21,6 +23,7 @@ export class PersonService {
     });
   }
 
+  // Lista las personas que fueron dadas de baja.
   findDeleted() {
     return this.prismaService.person.findMany({
       where: {
@@ -31,6 +34,7 @@ export class PersonService {
     });
   }
 
+  // Busca una persona por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const person = await this.prismaService.person.findUnique({
       where: { id_person: id },
@@ -46,6 +50,7 @@ export class PersonService {
     return person;
   }
 
+  // Actualiza los datos de una persona.
   async update(id: number, updatePersonDto: UpdatePersonDto) {
     try {
       return await this.prismaService.person.update({
@@ -57,6 +62,7 @@ export class PersonService {
     }
   }
 
+  // Da de baja una persona. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.person.delete({
@@ -69,6 +75,7 @@ export class PersonService {
     }
   }
 
+  // Vuelve a activar una persona que estaba dada de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.person.update as any)({
@@ -81,8 +88,9 @@ export class PersonService {
     }
   }
 
+  // Avisa si la persona está enganchada a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
-    // Check if person is used as collector in collections
+    // Fija si la persona figura como colector en alguna colección
     const collectionsAsCollector = await this.prismaService.collection.findMany(
       {
         where: {
@@ -106,7 +114,7 @@ export class PersonService {
       },
     );
 
-    // Check if person is used as identifier in observations
+    // Fija si la persona figura como identificador en alguna observación
     const observationsAsIdentifier =
       await this.prismaService.observation.findMany({
         where: {
@@ -127,7 +135,7 @@ export class PersonService {
         },
       });
 
-    // Map observations from collections with their collection dates
+    // Arma la lista de observaciones con la fecha de colecta de cada una
     const observationsFromCollections = collectionsAsCollector.flatMap((c) =>
       c.Observation.map((obs) => ({
         ...obs,
@@ -141,7 +149,7 @@ export class PersonService {
       ...observationsAsIdentifier,
     ];
 
-    // Remove duplicates
+    // Saca los repetidos
     const uniqueObservations = Array.from(
       new Map(allObservations.map((obs) => [obs.id_observation, obs])).values(),
     );

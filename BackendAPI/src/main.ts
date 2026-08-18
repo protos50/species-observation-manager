@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   // Configure CORS origins via environment variable. Multiple origins supported, comma-separated.
-  // Defaults cover local dev and production domain.
+  // Por defecto cubre el desarrollo local y el dominio de produccion.
   const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000,https://192-99-145-175.sslip.io')
     .split(',')
     .map((o) => o.trim())

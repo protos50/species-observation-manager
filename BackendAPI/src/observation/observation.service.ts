@@ -14,17 +14,14 @@ import { Prisma } from '@prisma/client';
 export class ObservationService {
   constructor(private prismaService: PrismaService) {}
 
-  /**
-   * Create a new collection and observation using Prisma transaction
-   * All fields are now properly integrated with the new schema
-   */
+  // Crea la colección y la observación juntas: si algo falla, no queda nada a medias.
   async createCollectionAndObservation(
     createDto: CreateCollectionObservationDto,
   ) {
     try {
-      // Use Prisma transaction to create collection and observation atomically
+      // Todo dentro de una transacción: o se crean las dos cosas, o no se crea ninguna
       const result = await this.prismaService.$transaction(async (prisma) => {
-        // Create collection
+        // Crea la colección
         const collection = await prisma.collection.create({
           data: {
             id_person: createDto.id_person,
@@ -35,7 +32,7 @@ export class ObservationService {
           },
         });
 
-        // Determine climate data (only if geolocation/locality has a matching date)
+        // Busca el clima, solo si la localidad tiene un registro para esa fecha
         let climateDataId: number | undefined;
         if (createDto.id_geolocation) {
           const geolocation = await prisma.geolocation.findUnique({
@@ -49,7 +46,7 @@ export class ObservationService {
             );
           }
 
-          // Prisma @db.Date ignores time part, ensure we look up by date component only
+          // Prisma guarda @db.Date sin hora, así que la búsqueda va solo por la fecha
           // Extraer fecha del ISO string y parsear directamente
           const dateStr = createDto.collection_date.toString().split('T')[0]; // "YYYY-MM-DD"
           const [year, month, day] = dateStr.split('-').map(Number);
@@ -70,7 +67,7 @@ export class ObservationService {
           }
         }
 
-        // Create observation linked to the collection
+        // Crea la observación enganchada a esa colección
         const observation = await prisma.observation.create({
           data: {
             id_taxon: createDto.id_taxon,
@@ -93,7 +90,7 @@ export class ObservationService {
         return observation;
       });
 
-      // Fetch and return the full observation details with all relations
+      // Devuelve la observación completa, con todas sus relaciones
       return this.findOne(result.id_observation);
     } catch (error) {
       throw new BadRequestException(
@@ -102,9 +99,7 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Get all observations with detailed information and pagination
-   */
+  // Lista las observaciones activas, paginadas y con toda su información asociada.
   async findAll(page: number = 1, limit: number = 10) {
     try {
       // Ensure parameters are numbers (query params come as strings)
@@ -112,10 +107,10 @@ export class ObservationService {
       const limitNum = Number(limit) || 10;
       const skip = (pageNum - 1) * limitNum;
 
-      // Get total count for pagination metadata
+      // Cuenta el total para poder armar la paginación
       const totalCount = await this.prismaService.observation.count();
 
-      // Get observations with full details (same includes as findOne)
+      // Trae las observaciones con el mismo detalle que findOne
       const observations = await this.prismaService.observation.findMany({
         skip,
         take: limitNum,
@@ -181,9 +176,7 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Get detailed information about a specific observation
-   */
+  // Trae una observación con el detalle completo: taxón, colección, ubicación, clima y ambiente.
   async findOne(id: number) {
     const observation = await this.prismaService.observation.findUnique({
       where: { id_observation: id },
@@ -233,9 +226,7 @@ export class ObservationService {
     return observation;
   }
 
-  /**
-   * Search observations by various criteria with full nested data and pagination
-   */
+  // Busca observaciones combinando los filtros del panel: taxón, localidad, colector, fechas y coordenadas.
   async searchObservations(searchDto: SearchObservationDto) {
     try {
       // Ensure parameters are numbers (query params come as strings)
@@ -243,7 +234,7 @@ export class ObservationService {
       const limitNum = Number(searchDto.limit) || 10;
       const skip = (pageNum - 1) * limitNum;
 
-      // Build dynamic where clause based on search parameters
+      // Arma el where sobre la marcha, según los parámetros de búsqueda
       const where: any = {};
       const conditions: any[] = [];
 
@@ -576,7 +567,7 @@ export class ObservationService {
         });
       }
 
-      // Filter by locality ID or name (with nested geographic search)
+      // Filtra por localidad, tanto por id como por nombre, buscando también en la jerarquía geográfica
       if (
         searchDto.locality_id ||
         searchDto.locality_name ||
@@ -589,7 +580,7 @@ export class ObservationService {
         if (searchDto.locality_id) {
           localityCondition.id_locality = searchDto.locality_id;
         } else {
-          // Build nested geographic conditions
+          // Arma las condiciones geográficas anidadas (país > provincia > departamento > localidad)
           const geographicConditions: any = {};
 
           if (searchDto.locality_name) {
@@ -792,13 +783,13 @@ export class ObservationService {
       if (searchDto.start_date || searchDto.end_date) {
         const dateCondition: any = {};
         if (searchDto.start_date) {
-          // Convert date string to ISO-8601 DateTime format
+          // Pasa la fecha de texto a formato ISO-8601
           const startDate = new Date(searchDto.start_date);
           startDate.setHours(0, 0, 0, 0);
           dateCondition.gte = startDate.toISOString();
         }
         if (searchDto.end_date) {
-          // Convert date string to ISO-8601 DateTime format (end of day)
+          // Pasa la fecha de texto a formato ISO-8601 (end of day)
           const endDate = new Date(searchDto.end_date);
           endDate.setHours(23, 59, 59, 999);
           dateCondition.lte = endDate.toISOString();
@@ -807,14 +798,14 @@ export class ObservationService {
         conditions.push({ collection: { collection_date: dateCondition } });
       }
 
-      // Filter by coordinates (latitude and/or longitude)
-      // Radio is optional, defaults to 10m if not provided for practical matching
+      // Filtra por coordenadas, sea por latitud, por longitud o por ambas
+      // El radio es opcional: si no viene, se usan 10 metros
       if (searchDto.latitude || searchDto.longitude) {
         const geolocationConditions: any[] = [];
 
         if (searchDto.latitude) {
           const lat = parseFloat(searchDto.latitude.toString());
-          // Use radius if provided, otherwise default to 10m for practical matching
+          // Usa el radio que hayan pasado; si no vino, 10 metros
           const radius = searchDto.radius 
             ? parseFloat(searchDto.radius.toString()) 
             : 10; // 10m tolerance for practical coordinate matching
@@ -828,7 +819,7 @@ export class ObservationService {
 
         if (searchDto.longitude) {
           const lng = parseFloat(searchDto.longitude.toString());
-          // Use radius if provided, otherwise default to 10m for practical matching
+          // Usa el radio que hayan pasado; si no vino, 10 metros
           const radius = searchDto.radius 
             ? parseFloat(searchDto.radius.toString()) 
             : 10; // 10m tolerance for practical coordinate matching
@@ -849,15 +840,15 @@ export class ObservationService {
         }
       }
 
-      // Combine all conditions with AND logic
+      // Junta todas las condiciones con AND
       if (conditions.length > 0) {
         where.AND = conditions;
       }
 
-      // Get total count for pagination metadata
+      // Cuenta el total para poder armar la paginación
       const totalCount = await this.prismaService.observation.count({ where });
 
-      // Get observations with full details (same includes as findAll)
+      // Trae las observaciones con el mismo detalle que findAll
       const observations = await this.prismaService.observation.findMany({
         where,
         skip,
@@ -923,28 +914,20 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Find observations by taxon ID
-   */
+  // Lista las observaciones de un taxón.
   async findByTaxon(taxonId: number) {
     return this.searchObservations({ taxon_id: taxonId });
   }
 
-  /**
-   * Find observations by locality ID
-   */
+  // Lista las observaciones registradas en una localidad.
   async findByLocality(localityId: number) {
     return this.searchObservations({ locality_id: localityId });
   }
 
-  /**
-   * Find observations related to a specific collection
-   * Since collections and observations have a 1:1 relationship in our schema,
-   * this function returns a specific observation.
-   */
+  // Lista las observaciones que pertenecen a una colección.
   async findByCollection(collectionId: number) {
     try {
-      // Find the observation that has this collection ID
+      // Busca la observación que corresponde a esta colección
       const observation = await this.prismaService.observation.findFirst({
         where: { id_collection: collectionId },
       });
@@ -955,7 +938,7 @@ export class ObservationService {
         );
       }
 
-      // Get full details using consistent Prisma method
+      // Trae el detalle completo con el mismo criterio que el resto de las consultas
       return this.findOne(observation.id_observation);
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -967,12 +950,10 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Update observation using Prisma direct
-   */
+  // Actualiza una observación y, si cambió la localidad o la fecha, reengancha el dato climático que corresponda.
   async update(id: number, updateObservationDto: UpdateObservationDto) {
     try {
-      // Get the observation first to find the collection ID
+      // Primero la observación, para saber a qué colección pertenece
       const observation = await this.prismaService.observation.findUnique({
         where: { id_observation: id },
       });
@@ -981,32 +962,32 @@ export class ObservationService {
         throw new NotFoundException(`Observation with ID ${id} not found`);
       }
 
-      // Extract trap_number if present (it belongs to Collection, not Observation)
+      // Saca el número de trampa si vino: pertenece a la colección, no a la observación
       const { trap_number, ...observationData } = updateObservationDto as any;
 
-      // Use transaction to update both observation and collection
+      // Una transacción para tocar la observación y su colección de una
       await this.prismaService.$transaction(async (prisma) => {
-        // Get current collection to check for date/geolocation changes
+        // Trae la colección actual para ver si cambiaron la fecha o la geolocalización
         const collection = await prisma.collection.findUnique({
           where: { id_collection: observation.id_collection },
         });
 
-        // Get current geolocation to check for locality changes
+        // Trae la geolocalización actual para ver si cambió de localidad
         const currentGeolocation = await prisma.geolocation.findUnique({
           where: { id_geolocation: observation.id_geolocation },
           include: { locality: true },
         });
 
-        // Determine if we need to validate climate_data
-        // This happens if EITHER geolocation OR collection_date changes
+        // Decide si hace falta validar el dato climático
+        // Pasa si cambió la geolocalización o la fecha de colecta, cualquiera de las dos
         const geolocationChanged = observationData.id_geolocation !== undefined;
         
-        // Check if collection_date is being updated (it's in the collection, not observation)
-        // We need to check if trap_number is being updated, which means collection is being modified
+        // Mira si están cambiando la fecha de colecta, que vive en la colección y no en la observación
+        // Si viene el número de trampa, entonces también hay que tocar la colección
         const collectionDateChanged = trap_number !== undefined;
 
         if ((geolocationChanged || collectionDateChanged) && collection && currentGeolocation) {
-          // Get the new geolocation if it changed
+          // Trae la geolocalización nueva, si es que cambió
           let newGeolocation: any = currentGeolocation;
           if (geolocationChanged) {
             newGeolocation = await prisma.geolocation.findUnique({
@@ -1019,7 +1000,7 @@ export class ObservationService {
           const collectionDate = collection.collection_date;
 
           if (newGeolocation && newGeolocation.locality && collectionDate) {
-            // Try to find climate data for the new locality + date combination
+            // Busca si hay clima para la localidad y la fecha nuevas
             const climateData = await prisma.climateData.findFirst({
               where: {
                 id_locality: newGeolocation.locality.id_locality,
@@ -1027,7 +1008,7 @@ export class ObservationService {
               },
             });
 
-            // If no climate data exists for this locality + date combination, clear the reference
+            // Si no hay clima para esa localidad y esa fecha, deja la referencia vacía
             if (!climateData) {
               observationData.id_climate_data = null;
             } else {
@@ -1036,13 +1017,13 @@ export class ObservationService {
           }
         }
 
-        // Update observation fields
+        // Actualiza los campos de la observación
         await prisma.observation.update({
           where: { id_observation: id },
           data: observationData,
         });
 
-        // Update collection if trap_number is provided
+        // Actualiza la colección si vino el número de trampa
         if (trap_number !== undefined) {
           await prisma.collection.update({
             where: { id_collection: observation.id_collection },
@@ -1051,7 +1032,7 @@ export class ObservationService {
         }
       });
 
-      // Get the updated observation with all relations
+      // Devuelve la observación ya actualizada, con todas sus relaciones
       return this.findOne(id);
     } catch (error) {
       if (error.code === 'P2025') {
@@ -1063,13 +1044,11 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Remove observation and its associated collection using Prisma transaction
-   */
+  // Da de baja una observación. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       await this.prismaService.$transaction(async (prisma) => {
-        // Get observation to find associated collection
+        // Trae la observación para ubicar su colección
         const observation = await prisma.observation.findUnique({
           where: { id_observation: id },
         });
@@ -1078,12 +1057,12 @@ export class ObservationService {
           throw new NotFoundException(`Observation with ID ${id} not found`);
         }
 
-        // Delete observation first (FK constraint)
+        // Primero la observación, porque la clave foránea no deja al revés
         await prisma.observation.delete({
           where: { id_observation: id },
         });
 
-        // Delete associated collection
+        // Borra la colección asociada
         await prisma.collection.delete({
           where: { id_collection: observation.id_collection },
         });
@@ -1103,10 +1082,7 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Build complete taxonomic hierarchy for a given taxon
-   * Navigates up the parent chain to get all taxonomic levels
-   */
+  // Arma la cadena de clasificación completa de un taxón subiendo de padre en padre hasta la raíz.
   private async buildTaxonomicHierarchy(taxonId: number) {
     const hierarchy = {
       reino: '',
@@ -1121,7 +1097,7 @@ export class ObservationService {
     };
 
     try {
-      // Get the complete taxonomic chain from this taxon up to root
+      // Arma la cadena taxonómica completa, de este taxón para arriba
       let currentTaxon = await this.prismaService.taxon.findUnique({
         where: { id_taxon: taxonId },
         include: {
@@ -1169,7 +1145,7 @@ export class ObservationService {
         },
       });
 
-      // Build hierarchy by traversing from current taxon up to root
+      // Arma la jerarquía subiendo desde este taxón hasta la raíz
       const taxonChain: Array<{ name: string; level: string }> = [];
       while (currentTaxon) {
         taxonChain.push({
@@ -1179,7 +1155,7 @@ export class ObservationService {
         currentTaxon = currentTaxon.parent;
       }
 
-      // Map taxon names to their appropriate hierarchy levels
+      // Acomoda cada nombre en el nivel de la jerarquía que le toca
       taxonChain.forEach((taxon) => {
         const level = taxon.level;
         if (level === 'kingdom' || level === 'reino') {
@@ -1214,13 +1190,10 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Export observations data for R analytics in CSV format
-   * Replicates original Excel structure for compatibility
-   */
+  // Arma el CSV de observaciones para descargar, con el mismo orden de columnas que usaba el Excel original.
   async exportToCsv(filters?: ExportCsvDto) {
     try {
-      // Build dynamic where clause based on filters
+      // Arma el where sobre la marcha, según los filtros que hayan llegado
       const where: any = {};
 
       if (filters?.taxon_name) {
@@ -1264,7 +1237,7 @@ export class ObservationService {
         where.collection = { collection_date: dateCondition };
       }
 
-      // Get all observations with complete nested data
+      // Trae las observaciones con todos sus datos relacionados
       const observations = await this.prismaService.observation.findMany({
         where,
         include: {
@@ -1309,27 +1282,27 @@ export class ObservationService {
         },
       });
 
-      // Transform data to match original Excel structure with full taxonomy hierarchy
+      // Acomoda los datos como venían en el Excel original, con la taxonomía completa
       const csvData = await Promise.all(
         observations.map(async (obs) => {
-          // Get full taxonomic hierarchy for this taxon
+          // Trae la jerarquía taxonómica completa de este taxón
           const hierarchy = await this.buildTaxonomicHierarchy(
             obs.taxon.id_taxon,
           );
 
-          // Get identifier person info
+          // Saca quién hizo la identificación
           const identifier = obs.identifier;
           const identifierName = identifier
             ? `${identifier.person_name} ${identifier.person_lastname}`.trim()
             : '';
 
-          // Get climate data if exists
+          // Trae el clima, si es que hay
           const climate = obs.climate_data;
 
-          // Get caste info
+          // Saca la casta
           const casteName = obs.caste?.caste_name || '';
 
-          // Get author info from species taxon
+          // Saca el autor desde el taxón de la especie
           const authorInfo = obs.taxon.author
             ? `${obs.taxon.author.author_name}${obs.taxon.description_year ? `, ${obs.taxon.description_year}` : ''}`
             : '';
@@ -1375,7 +1348,7 @@ export class ObservationService {
               obs.geolocation?.locality.department?.province?.province_name ||
               '',
 
-            // Environment and habitat
+            // Ambiente y hábitat
             ambiente: obs.environment?.environment_name || '',
 
             // Geolocation
@@ -1413,9 +1386,7 @@ export class ObservationService {
     }
   }
 
-  /**
-   * Find all deleted observations
-   */
+  // Lista las observaciones que fueron dadas de baja.
   findDeleted() {
     return (this.prismaService.observation.findMany as any)({
       where: {
@@ -1469,13 +1440,11 @@ export class ObservationService {
     });
   }
 
-  /**
-   * Restore a soft-deleted observation and its associated collection
-   */
+  // Vuelve a activar una observación que estaba dada de baja.
   async restore(id: number) {
     try {
       return await this.prismaService.$transaction(async (prisma) => {
-        // Get observation to find associated collection
+        // Trae la observación para ubicar su colección
         const observation = await (prisma.observation.findUnique as any)({
           where: { id_observation: id },
           withDeleted: true,
