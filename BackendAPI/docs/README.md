@@ -4,7 +4,8 @@ API REST del sistema de gestión de colecciones biológicas, construida con Nest
 Prisma y PostgreSQL.
 
 La API también está documentada con Swagger: con el backend levantado, la interfaz
-queda en `/api/docs`.
+queda en `http://localhost:4000/docs`. Ojo que esa ruta no lleva el prefijo `/api`,
+porque Swagger se monta aparte del prefijo global.
 
 ## Índice
 

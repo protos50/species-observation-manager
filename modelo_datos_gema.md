@@ -31,12 +31,38 @@ erDiagram
         string name
         int id_taxonomic_level FK
         int parent_id FK
+        int id_author FK
+    }
+
+    Author {
+        int id_author PK
+        string author_name
+        datetime deleted_at
     }
 
     %% ===== ENVIRONMENTAL SYSTEM =====
     Environment {
         int id_environment PK
         string environment_name
+    }
+
+    Caste {
+        int id_caste PK
+        string caste_name
+        datetime deleted_at
+    }
+
+    ClimateData {
+        int id_climate_data PK
+        int id_locality FK
+        date climate_date
+        float t_min
+        float t_max
+        float t_med
+        float hr_min
+        float hr_max
+        float hr_med
+        float precipitation
     }
 
     %% ===== COLLECTION SYSTEM =====
@@ -132,6 +158,7 @@ erDiagram
     %% Taxonomic hierarchy
     TaxonomicLevel ||--o{ Taxon : "defines level"
     Taxon ||--o{ Taxon : "parent/child"
+    Author ||--o{ Taxon : "describes"
     
     %% Geographic hierarchy
     Country ||--o{ Province : "contains"
@@ -146,9 +173,14 @@ erDiagram
     
     %% Core observations
     Taxon ||--o{ Observation : "observed"
-    Locality ||--o{ Observation : "located at"
     Collection ||--o{ Observation : "collected in"
     Geolocation ||--o{ Observation : "positioned at"
+    Environment ||--o{ Observation : "habitat"
+    Caste ||--o{ Observation : "caste"
+    ClimateData ||--o{ Observation : "weather at"
+    Person ||--o{ Observation : "identified by"
+    Person ||--o{ Observation : "confirmed by"
+    Locality ||--o{ ClimateData : "measured at"
     
     %% Contact system
     Service ||--o{ Contact : "related to"

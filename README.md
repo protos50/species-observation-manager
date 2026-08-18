@@ -116,6 +116,19 @@ openssl rand -base64 48   # JWT_SECRET_KEY, JWT_REFRESH_TOKEN
 npx auth secret           # AUTH_SECRET / NEXTAUTH_SECRET
 ```
 
+## Documentación
+
+| Documento | Qué contiene |
+|---|---|
+| [Resumen del proyecto](./resumen_proyecto.md) | Qué problema resuelve y cómo, sin entrar en el detalle técnico |
+| [Documentación de la API](./BackendAPI/docs/README.md) | Endpoints, modelos, esquemas y seguridad |
+| [Modelo de datos](./modelo_datos_gema.md) | Diagrama entidad-relación de las 20 tablas |
+| [Despliegue con Docker](./docker/README.md) | Build de las imágenes y orquestación |
+| [Scripts](./scripts/README.md) | Importación desde ODS/CSV, respaldos y utilidades |
+
+Con el backend levantado, la referencia interactiva de Swagger queda en
+`http://localhost:4000/docs`.
+
 ## Pruebas
 
 ```bash
