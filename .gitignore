@@ -53,3 +53,6 @@ backups/
 .vercel
 .turbo
 *.tsbuildinfo
+
+# Configuracion de la instancia de prueba (contiene secretos)
+DOKPLOY-TEST.md
