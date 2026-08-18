@@ -102,16 +102,21 @@ export function CreateTaxonDialog({ onTaxonCreated }: CreateTaxonDialogProps) {
 
   const loadParentTaxa = async (levelId: number) => {
     try {
-      // El padre debe estar en el nivel inmediatamente superior
-      const parentLevelId = levelId - 1;
-      if (!parentLevelId || parentLevelId < 1) {
-        setParentTaxa([]);
-        return;
-      }
-      const taxaAtParentLevel = await taxonomyApi.taxa.getByLevel(
-        parentLevelId
-      );
-      setParentTaxa(taxaAtParentLevel);
+      // Sirve como padre cualquier taxon de un nivel superior, no solo el
+      // inmediato de arriba. La clasificacion real suele saltearse niveles:
+      // Formicidae cuelga directamente de Animalia porque en el laboratorio no
+      // se cargaron el filo, la clase ni el orden. Si solo ofrecieramos el
+      // nivel inmediato, esos taxones quedarian sueltos sin forma de
+      // engancharlos desde la interfaz.
+      const todos = await taxonomyApi.taxa.getAll();
+      const superiores = todos
+        .filter((t) => t.id_taxonomic_level < levelId)
+        .sort(
+          (a, b) =>
+            a.id_taxonomic_level - b.id_taxonomic_level ||
+            a.name.localeCompare(b.name)
+        );
+      setParentTaxa(superiores);
     } catch (error) {
       toast.error("Error al cargar taxones padre");
     }
