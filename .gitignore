@@ -1,4 +1,55 @@
-WZNHbvR.xlsx
-reglas.txt
-backup.env.production
-proyecto_final.nginx
+# ---------------------------------------------------------------
+# Secretos y configuracion local
+# Regla general: NINGUN archivo .env se versiona.
+# Solo se publican las plantillas *.example.
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+!**/public/**/*.key
+
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+dist/
+build/
+.next/
+out/
+
+# Prisma
+BackendAPI/prisma/*.db
+BackendAPI/prisma/*.db-journal
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Editores y sistema operativo
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+
+# Docker: volumenes y respaldos locales
+docker/postgres/data/
+*.sql.bak
+backups/
+
+# Varios
+.vercel
+.turbo
+*.tsbuildinfo

@@ -3,6 +3,8 @@ import { TaxonService } from './taxon.service';
 import { CreateTaxonDto } from './dto/create-taxon.dto';
 import { UpdateTaxonDto } from './dto/update-taxon.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('taxon')
 @ApiBearerAuth()
@@ -10,6 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class TaxonController {
   constructor(private readonly taxonService: TaxonService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createTaxonDto: CreateTaxonDto) {
     return this.taxonService.create(createTaxonDto);
@@ -60,16 +63,19 @@ export class TaxonController {
     return this.taxonService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTaxonDto: UpdateTaxonDto) {
     return this.taxonService.update(+id, updateTaxonDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.taxonService.remove(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.taxonService.restore(+id);

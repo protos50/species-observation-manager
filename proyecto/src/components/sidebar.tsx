@@ -134,7 +134,15 @@ const items = [
     icon: Users,
     requiredRoles: [ROLE_IDS.ADMIN],
   },
-  { title: "Contacto", url: "/dashboard/contacto", icon: Inbox },
+  {
+    // Bandeja interna de consultas: el backend la restringe a ADMIN
+    // (ContactController lleva @Roles(Role.ADMIN)). El formulario publico
+    // de la landing sigue abierto porque su endpoint es @Public().
+    title: "Contacto",
+    url: "/dashboard/contacto",
+    icon: Inbox,
+    requiredRoles: [ROLE_IDS.ADMIN],
+  },
   {
     title: "Servicios",
     url: "/dashboard/servicios",

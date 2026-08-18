@@ -4,6 +4,8 @@ import { Geolocation } from '@prisma/client';
 import { CreateGeolocationDto } from './dto/create-geolocation.dto';
 import { UpdateGeolocationDto } from './dto/update-geolocation.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../auth/enums/role.enum';
 
 @ApiTags('geolocation')
 @ApiBearerAuth()
@@ -11,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class GeolocationController {
   constructor(private readonly geolocationService: GeolocationService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   async create(@Body() createGeolocationDto: CreateGeolocationDto): Promise<Geolocation> {
     return this.geolocationService.create(createGeolocationDto);
@@ -46,6 +49,7 @@ export class GeolocationController {
     return geolocation;
   }
 
+  @Roles(...WRITE_ROLES)
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -61,6 +65,7 @@ export class GeolocationController {
     }
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<Geolocation> {
     try {
@@ -83,6 +88,7 @@ export class GeolocationController {
     return this.geolocationService.findDeleted();
   }
 
+  @Roles(...WRITE_ROLES)
   @Put(':id/restore')
   restore(@Param('id') id: string) {
     return this.geolocationService.restore(+id);

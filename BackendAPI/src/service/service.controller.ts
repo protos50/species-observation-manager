@@ -12,10 +12,13 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
 
 @ApiTags('service')
 @ApiBearerAuth()
 @Controller('service')
+@Roles(Role.ADMIN)
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 

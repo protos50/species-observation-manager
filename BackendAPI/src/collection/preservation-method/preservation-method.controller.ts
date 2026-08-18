@@ -11,6 +11,8 @@ import { PreservationMethodService } from './preservation-method.service';
 import { CreatePreservationMethodDto } from './dto/create-preservation-method.dto';
 import { UpdatePreservationMethodDto } from './dto/update-preservation-method.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('preservation-method')
 @ApiBearerAuth()
@@ -20,6 +22,7 @@ export class PreservationMethodController {
     private readonly preservationMethodService: PreservationMethodService,
   ) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createPreservationMethodDto: CreatePreservationMethodDto) {
     return this.preservationMethodService.create(createPreservationMethodDto);
@@ -39,6 +42,7 @@ export class PreservationMethodController {
     return this.preservationMethodService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -50,6 +54,7 @@ export class PreservationMethodController {
     );
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.preservationMethodService.remove(+id);
@@ -60,6 +65,7 @@ export class PreservationMethodController {
     return this.preservationMethodService.checkIfInUse(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.preservationMethodService.restore(+id);

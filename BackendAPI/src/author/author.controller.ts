@@ -12,6 +12,8 @@ import { AuthorService } from './author.service';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../auth/enums/role.enum';
 
 @ApiTags('author')
 @ApiBearerAuth()
@@ -19,6 +21,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class AuthorController {
   constructor(private readonly authorService: AuthorService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createAuthorDto: CreateAuthorDto) {
     return this.authorService.create(createAuthorDto);
@@ -37,6 +40,7 @@ export class AuthorController {
     return this.authorService.findOne(id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -45,10 +49,12 @@ export class AuthorController {
     return this.authorService.update(id, updateAuthorDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.authorService.remove(id);
   }
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.authorService.restore(id);

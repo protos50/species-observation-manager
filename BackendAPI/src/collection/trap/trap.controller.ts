@@ -11,6 +11,8 @@ import { TrapService } from './trap.service';
 import { CreateTrapDto } from './dto/create-trap.dto';
 import { UpdateTrapDto } from './dto/update-trap.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('trap')
 @ApiBearerAuth()
@@ -18,6 +20,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class TrapController {
   constructor(private readonly trapService: TrapService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createTrapDto: CreateTrapDto) {
     return this.trapService.create(createTrapDto);
@@ -38,11 +41,13 @@ export class TrapController {
     return this.trapService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTrapDto: UpdateTrapDto) {
     return this.trapService.update(+id, updateTrapDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.trapService.remove(+id);
@@ -53,6 +58,7 @@ export class TrapController {
     return this.trapService.checkIfInUse(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.trapService.restore(+id);

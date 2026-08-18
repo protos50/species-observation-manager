@@ -11,6 +11,8 @@ import { TaxonomicLevelService } from './taxonomic-level.service';
 import { CreateTaxonomicLevelDto } from './dto/create-taxonomic-level.dto';
 import { UpdateTaxonomicLevelDto } from './dto/update-taxonomic-level.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('taxonomic-level')
 @ApiBearerAuth()
@@ -18,6 +20,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class TaxonomicLevelController {
   constructor(private readonly taxonomicLevelService: TaxonomicLevelService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createTaxonomicLevelDto: CreateTaxonomicLevelDto) {
     return this.taxonomicLevelService.create(createTaxonomicLevelDto);
@@ -37,6 +40,7 @@ export class TaxonomicLevelController {
     return this.taxonomicLevelService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -45,6 +49,7 @@ export class TaxonomicLevelController {
     return this.taxonomicLevelService.update(+id, updateTaxonomicLevelDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.taxonomicLevelService.remove(+id);
@@ -55,6 +60,7 @@ export class TaxonomicLevelController {
     return this.taxonomicLevelService.checkIfInUse(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.taxonomicLevelService.restore(+id);

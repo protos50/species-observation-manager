@@ -17,6 +17,8 @@ import { SearchObservationDto } from './dto/search-observation.dto';
 import { ExportCsvDto } from './dto/export-csv.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../auth/enums/role.enum';
 
 @ApiTags('observation')
 @ApiBearerAuth()
@@ -27,6 +29,7 @@ export class ObservationController {
   /**
    * Create a new collection and observation together
    */
+  @Roles(...WRITE_ROLES)
   @Post('with-collection')
   createWithCollection(@Body() createDto: CreateCollectionObservationDto) {
     return this.observationService.createCollectionAndObservation(createDto);
@@ -89,6 +92,7 @@ export class ObservationController {
   /**
    * Update an observation
    */
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -100,6 +104,7 @@ export class ObservationController {
   /**
    * Delete an observation and its associated collection
    */
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.observationService.remove(+id);
@@ -108,6 +113,7 @@ export class ObservationController {
   /**
    * Restore a soft-deleted observation
    */
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.observationService.restore(+id);
