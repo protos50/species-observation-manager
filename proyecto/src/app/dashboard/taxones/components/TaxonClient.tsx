@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { CanWrite, withoutActionsColumn } from '@/components/CanWrite'
+import { CanWrite, withoutColumns } from '@/components/CanWrite'
 import { useRoleAuth } from '@/hooks/use-role-auth'
 
 interface TaxonClientProps {
@@ -128,10 +128,7 @@ export function TaxonClient({ taxa: initialTaxa, taxonomicLevels }: TaxonClientP
     setFilters({})
   }, [])
 
-  const columns = useMemo(() => {
-    const cols = getTaxonColumns(onOpenDetails)
-    return canWrite() ? cols : withoutActionsColumn(cols)
-  }, [onOpenDetails, canWrite])
+  const columns = useMemo(() => getTaxonColumns(onOpenDetails), [onOpenDetails])
 
   useEffect(() => {
     loadDeletedTaxa()
@@ -160,7 +157,7 @@ export function TaxonClient({ taxa: initialTaxa, taxonomicLevels }: TaxonClientP
         ),
       },
       ]
-      return canWrite() ? cols : withoutActionsColumn(cols)
+      return canWrite() ? cols : withoutColumns(cols, ['restore'])
     },
     [handleRestore, canWrite],
   )

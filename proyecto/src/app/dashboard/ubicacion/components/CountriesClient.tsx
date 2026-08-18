@@ -13,8 +13,7 @@ import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
-import { useRoleAuth } from "@/hooks/use-role-auth";
+import { CanWrite } from "@/components/CanWrite";
 
 interface Country {
   id_country: number;
@@ -28,7 +27,6 @@ interface CountriesClientProps {
 }
 
 export function CountriesClient({ initialCountries }: CountriesClientProps) {
-  const { canWrite } = useRoleAuth();
   const [activeCountries, setActiveCountries] = useState<Country[]>(initialCountries);
   const [deletedCountries, setDeletedCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
@@ -251,7 +249,7 @@ export function CountriesClient({ initialCountries }: CountriesClientProps) {
         </TabsList>
 
         <TabsContent value="activos" className="mt-4">
-          <ResponsiveDataList columns={canWrite() ? columns : withoutActionsColumn(columns)} data={activeCountries} />
+          <ResponsiveDataList columns={columns} data={activeCountries} />
         </TabsContent>
 
         <TabsContent value="baja" className="mt-4">
@@ -265,7 +263,7 @@ export function CountriesClient({ initialCountries }: CountriesClientProps) {
             </div>
           ) : (
             <ResponsiveDataList
-              columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)}
+              columns={deletedColumns}
               data={deletedCountries}
             />
           )}

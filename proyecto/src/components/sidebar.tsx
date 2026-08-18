@@ -3,7 +3,6 @@ import {
   ArrowDownToLine,
   TelescopeIcon as Binoculars,
   Home,
-  Settings,
   Users,
   LogOut,
   PanelLeft,
@@ -72,7 +71,7 @@ const observacionesItem = {
   icon: Binoculars,
   subItems: [
     {
-      title: "Agregar observación",
+      title: "Gestión de observaciones",
       url: "/dashboard/observaciones",
       icon: PlusIcon,
     },
@@ -580,18 +579,6 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarSeparator />
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              tooltip="Configuración"
-              isActive={pathname === "/dashboard/configuracion"}
-            >
-              <Link href="/dashboard/configuracion">
-                <Settings />
-                <span className="text-xs md:text-sm">Configuración</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}

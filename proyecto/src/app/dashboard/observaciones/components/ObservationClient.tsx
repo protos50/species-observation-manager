@@ -14,7 +14,7 @@ import { ObservationDetailsSheet } from './ObservationDetailsSheet'
 import { CreateObservationDialog } from './CreateObservationDialog'
 import { EditObservationDialog } from './EditObservationDialog'
 import { toast } from 'sonner'
-import { CanWrite, withoutActionsColumn } from '@/components/CanWrite'
+import { CanWrite } from '@/components/CanWrite'
 import { useRoleAuth } from '@/hooks/use-role-auth'
 
 interface ObservationClientProps {
@@ -302,7 +302,7 @@ export function ObservationClient({ observations: initial }: ObservationClientPr
           />
 
           <ResponsiveDataList
-            columns={canWrite() ? columns : withoutActionsColumn(columns)}
+            columns={columns}
             data={data}
             cardsProps={{
               showFieldLabels: true,
@@ -356,7 +356,7 @@ export function ObservationClient({ observations: initial }: ObservationClientPr
             </div>
           ) : (
             <ResponsiveDataList
-              columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)}
+              columns={deletedColumns}
               data={deletedData}
               cardsProps={{
                 showFieldLabels: true,

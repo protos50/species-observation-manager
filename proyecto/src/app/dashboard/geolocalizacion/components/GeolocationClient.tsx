@@ -13,7 +13,7 @@ import { EditGeolocationDialog } from './EditGeolocationDialog'
 import { GeolocationDetailsSheet } from './GeolocationDetailsSheet'
 import { InUseAlertDialog } from '@/components/InUseAlertDialog'
 import { geolocationApi } from '@/lib/api/geolocation'
-import { CanWrite, withoutActionsColumn } from '@/components/CanWrite'
+import { CanWrite } from '@/components/CanWrite'
 import { useRoleAuth } from '@/hooks/use-role-auth'
 
 interface GeolocationClientProps {
@@ -201,7 +201,7 @@ export function GeolocationClient({ geolocations: initialGeolocations }: Geoloca
         </TabsList>
 
         <TabsContent value="activos" className="mt-4">
-          <ResponsiveDataList columns={canWrite() ? columns : withoutActionsColumn(columns)} data={activeGeolocations} />
+          <ResponsiveDataList columns={columns} data={activeGeolocations} />
         </TabsContent>
 
         <TabsContent value="baja" className="mt-4">
@@ -214,7 +214,7 @@ export function GeolocationClient({ geolocations: initialGeolocations }: Geoloca
               <p>No hay geolocalizaciones dadas de baja</p>
             </div>
           ) : (
-            <ResponsiveDataList columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)} data={deletedGeolocations} />
+            <ResponsiveDataList columns={deletedColumns} data={deletedGeolocations} />
           )}
         </TabsContent>
       </Tabs>

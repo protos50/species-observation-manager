@@ -231,7 +231,7 @@ export function ObservationDetailsSheet({
 
             {/* Geolocalización */}
             {o.geolocation ? (
-              <Card className="border-0 shadow-sm bg-white">
+            <Card className="border-0 shadow-sm bg-white">
                 <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Navigation className="h-4 w-4 text-blue-600" />
@@ -455,21 +455,22 @@ export function ObservationDetailsSheet({
               </Card>
             )}
 
-            <CanWrite>
-              {/* Acciones */}
+            {/* Acciones */}
               <Card className="border-0 shadow-sm bg-white">
                 <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
                   <h3 className="font-medium text-slate-900 mb-4">Acciones</h3>
 
                   <div className="space-y-1 xs:space-y-1.5 sm:space-y-2">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base cursor-pointer"
-                      onClick={() => setEditOpen(true)}
-                    >
-                      <Edit3 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
-                      <span className="font-medium">Editar observación</span>
-                    </Button>
+                    <CanWrite>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base cursor-pointer"
+                        onClick={() => setEditOpen(true)}
+                      >
+                        <Edit3 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
+                        <span className="font-medium">Editar observación</span>
+                      </Button>
+                    </CanWrite>
 
                     <Button
                       variant="outline"
@@ -483,30 +484,33 @@ export function ObservationDetailsSheet({
                     <Separator className="my-3" />
 
                     {onDelete && (
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start h-10 xs:h-12 sm:h-11 border-red-200 text-red-700 cursor-pointer text-xs xs:text-sm sm:text-base"
-                        onClick={() => onDelete(o.id_observation)}
-                      >
-                        <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
-                        <span className="font-medium">Eliminar observación</span>
-                      </Button>
+                      <CanWrite>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start h-10 xs:h-12 sm:h-11 border-red-200 text-red-700 cursor-pointer text-xs xs:text-sm sm:text-base"
+                          onClick={() => onDelete(o.id_observation)}
+                        >
+                          <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
+                          <span className="font-medium">Eliminar observación</span>
+                        </Button>
+                      </CanWrite>
                     )}
 
                     {onRestore && (
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start h-10 xs:h-12 sm:h-11 border-green-200 text-green-700 cursor-pointer text-xs xs:text-sm sm:text-base"
-                        onClick={() => onRestore(o.id_observation)}
-                      >
-                        <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
-                        <span className="font-medium">Restaurar observación</span>
-                      </Button>
+                      <CanWrite>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start h-10 xs:h-12 sm:h-11 border-green-200 text-green-700 cursor-pointer text-xs xs:text-sm sm:text-base"
+                          onClick={() => onRestore(o.id_observation)}
+                        >
+                          <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
+                          <span className="font-medium">Restaurar observación</span>
+                        </Button>
+                      </CanWrite>
                     )}
                   </div>
                 </CardContent>
-              </Card>
-            </CanWrite>
+            </Card>
           </div>
         )}
       </SheetContent>

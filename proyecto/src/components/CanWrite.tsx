@@ -50,7 +50,20 @@ const COLUMNAS_DE_ESCRITURA = ["actions", "restore"];
 export function withoutActionsColumn<T>(
   columns: ColumnDef<T>[]
 ): ColumnDef<T>[] {
-  return columns.filter(
-    (column) => !column.id || !COLUMNAS_DE_ESCRITURA.includes(column.id)
-  );
+  return withoutColumns(columns, COLUMNAS_DE_ESCRITURA);
+}
+
+/**
+ * Variante para tablas donde la columna de acciones mezcla botones de lectura
+ * con botones de escritura: por ejemplo geolocalizaciones (ver detalle + dar
+ * de baja) o ubicacion (recorrer la cascada pais > provincia > departamento >
+ * localidad + editar + dar de baja). Ahi no se puede quitar la columna entera
+ * sin dejar al perfil de consulta sin acceso a los datos; se filtran solo las
+ * columnas indicadas y los botones de escritura se envuelven en <CanWrite>.
+ */
+export function withoutColumns<T>(
+  columns: ColumnDef<T>[],
+  ids: string[]
+): ColumnDef<T>[] {
+  return columns.filter((column) => !column.id || !ids.includes(column.id));
 }
