@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import { toast } from "sonner";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 type Trap = {
   id_trap: number;
@@ -26,6 +28,7 @@ interface TrapClientProps {
 }
 
 export function TrapClient({ traps: initialTraps }: TrapClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeTraps, setActiveTraps] = useState<Trap[]>(initialTraps);
   const [deletedTraps, setDeletedTraps] = useState<Trap[]>([]);
   const [loading, setLoading] = useState(false);
@@ -165,13 +168,19 @@ export function TrapClient({ traps: initialTraps }: TrapClientProps) {
   }, []);
 
   const columns = useMemo<ColumnDef<Trap>[]>(
-    () => getColumns(handleTrapAction, handleEdit),
-    [handleTrapAction, handleEdit]
+    () => {
+      const cols = getColumns(handleTrapAction, handleEdit);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleTrapAction, handleEdit, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<Trap>[]>(
-    () => getDeletedColumns(handleTrapAction),
-    [handleTrapAction]
+    () => {
+      const cols = getDeletedColumns(handleTrapAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleTrapAction, canWrite]
   );
 
   const activosCount = activeTraps.length;
@@ -193,7 +202,9 @@ export function TrapClient({ traps: initialTraps }: TrapClientProps) {
             Tipos de trampas
           </h2>
         </div>
-        <CreateTrampDialog onTrampCreated={handleTrampCreated} />
+        <CanWrite>
+          <CreateTrampDialog onTrampCreated={handleTrampCreated} />
+        </CanWrite>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

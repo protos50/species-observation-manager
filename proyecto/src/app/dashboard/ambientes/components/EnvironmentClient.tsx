@@ -13,6 +13,8 @@ import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 import {
   Card,
   CardContent,
@@ -37,6 +39,7 @@ interface EnvironmentClientProps {
 export function EnvironmentClient({
   environments: initialEnvironments,
 }: EnvironmentClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeEnvironments, setActiveEnvironments] =
     useState<Environment[]>(initialEnvironments);
   const [deletedEnvironments, setDeletedEnvironments] = useState<Environment[]>(
@@ -204,13 +207,19 @@ export function EnvironmentClient({
   }, []);
 
   const columns = useMemo<ColumnDef<Environment>[]>(
-    () => getColumns(handleDeleteClick, handleEdit),
-    [handleDeleteClick, handleEdit]
+    () => {
+      const cols = getColumns(handleDeleteClick, handleEdit);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleDeleteClick, handleEdit, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<Environment>[]>(
-    () => getDeletedColumns(handleEnvironmentAction),
-    [handleEnvironmentAction]
+    () => {
+      const cols = getDeletedColumns(handleEnvironmentAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleEnvironmentAction, canWrite]
   );
 
   // Calcular estadísticas
@@ -242,9 +251,11 @@ export function EnvironmentClient({
             Tipos de Ambiente
           </h2>
         </div>
-        <CreateEnvironmentDialog
-          onEnvironmentCreated={handleEnvironmentCreated}
-        />
+        <CanWrite>
+          <CreateEnvironmentDialog
+            onEnvironmentCreated={handleEnvironmentCreated}
+          />
+        </CanWrite>
       </div>
 
       {/* Estadísticas con Cards */}

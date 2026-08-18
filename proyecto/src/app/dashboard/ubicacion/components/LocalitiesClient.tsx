@@ -14,6 +14,8 @@ import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import Link from "next/link";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 interface Locality {
   id_locality: number;
@@ -44,6 +46,7 @@ export function LocalitiesClient({
   initialLocalities,
   department,
 }: LocalitiesClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeLocalities, setActiveLocalities] = useState<Locality[]>(initialLocalities);
   const [deletedLocalities, setDeletedLocalities] = useState<Locality[]>([]);
   const [loading, setLoading] = useState(false);
@@ -223,10 +226,12 @@ export function LocalitiesClient({
             </div>
           </div>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Localidad
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Localidad
+          </Button>
+        </CanWrite>
       </div>
 
       <CreateLocalityDialog
@@ -270,7 +275,7 @@ export function LocalitiesClient({
         </TabsList>
 
         <TabsContent value="activos" className="mt-4">
-          <ResponsiveDataList columns={columns} data={activeLocalities} />
+          <ResponsiveDataList columns={canWrite() ? columns : withoutActionsColumn(columns)} data={activeLocalities} />
         </TabsContent>
 
         <TabsContent value="baja" className="mt-4">
@@ -284,7 +289,7 @@ export function LocalitiesClient({
             </div>
           ) : (
             <ResponsiveDataList
-              columns={deletedColumns}
+              columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)}
               data={deletedLocalities}
             />
           )}

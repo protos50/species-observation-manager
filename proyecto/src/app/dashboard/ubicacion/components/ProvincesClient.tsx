@@ -14,6 +14,8 @@ import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import Link from "next/link";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 interface Province {
   id_province: number;
@@ -39,6 +41,7 @@ export function ProvincesClient({
   initialProvinces,
   country,
 }: ProvincesClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeProvinces, setActiveProvinces] = useState<Province[]>(initialProvinces);
   const [deletedProvinces, setDeletedProvinces] = useState<Province[]>([]);
   const [loading, setLoading] = useState(false);
@@ -229,10 +232,12 @@ export function ProvincesClient({
             </div>
           </div>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Provincia
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Provincia
+          </Button>
+        </CanWrite>
       </div>
 
       <CreateProvinceDialog
@@ -276,7 +281,7 @@ export function ProvincesClient({
         </TabsList>
 
         <TabsContent value="activos" className="mt-4">
-          <ResponsiveDataList columns={columns} data={activeProvinces} />
+          <ResponsiveDataList columns={canWrite() ? columns : withoutActionsColumn(columns)} data={activeProvinces} />
         </TabsContent>
 
         <TabsContent value="baja" className="mt-4">
@@ -290,7 +295,7 @@ export function ProvincesClient({
             </div>
           ) : (
             <ResponsiveDataList
-              columns={deletedColumns}
+              columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)}
               data={deletedProvinces}
             />
           )}

@@ -13,6 +13,8 @@ import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 interface Country {
   id_country: number;
@@ -26,6 +28,7 @@ interface CountriesClientProps {
 }
 
 export function CountriesClient({ initialCountries }: CountriesClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeCountries, setActiveCountries] = useState<Country[]>(initialCountries);
   const [deletedCountries, setDeletedCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
@@ -200,10 +203,12 @@ export function CountriesClient({ initialCountries }: CountriesClientProps) {
             Países
           </h2>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo País
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo País
+          </Button>
+        </CanWrite>
       </div>
 
       <CreateCountryDialog
@@ -246,7 +251,7 @@ export function CountriesClient({ initialCountries }: CountriesClientProps) {
         </TabsList>
 
         <TabsContent value="activos" className="mt-4">
-          <ResponsiveDataList columns={columns} data={activeCountries} />
+          <ResponsiveDataList columns={canWrite() ? columns : withoutActionsColumn(columns)} data={activeCountries} />
         </TabsContent>
 
         <TabsContent value="baja" className="mt-4">
@@ -260,7 +265,7 @@ export function CountriesClient({ initialCountries }: CountriesClientProps) {
             </div>
           ) : (
             <ResponsiveDataList
-              columns={deletedColumns}
+              columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)}
               data={deletedCountries}
             />
           )}

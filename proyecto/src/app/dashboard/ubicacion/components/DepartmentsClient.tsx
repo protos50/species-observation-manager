@@ -14,6 +14,8 @@ import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import Link from "next/link";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 interface Department {
   id_department: number;
@@ -40,6 +42,7 @@ export function DepartmentsClient({
   initialDepartments,
   province,
 }: DepartmentsClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeDepartments, setActiveDepartments] = useState<Department[]>(initialDepartments);
   const [deletedDepartments, setDeletedDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
@@ -230,10 +233,12 @@ export function DepartmentsClient({
             </div>
           </div>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Departamento
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Departamento
+          </Button>
+        </CanWrite>
       </div>
 
       <CreateDepartmentDialog
@@ -277,7 +282,7 @@ export function DepartmentsClient({
         </TabsList>
 
         <TabsContent value="activos" className="mt-4">
-          <ResponsiveDataList columns={columns} data={activeDepartments} />
+          <ResponsiveDataList columns={canWrite() ? columns : withoutActionsColumn(columns)} data={activeDepartments} />
         </TabsContent>
 
         <TabsContent value="baja" className="mt-4">
@@ -291,7 +296,7 @@ export function DepartmentsClient({
             </div>
           ) : (
             <ResponsiveDataList
-              columns={deletedColumns}
+              columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)}
               data={deletedDepartments}
             />
           )}

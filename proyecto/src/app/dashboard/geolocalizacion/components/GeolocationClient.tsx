@@ -13,6 +13,8 @@ import { EditGeolocationDialog } from './EditGeolocationDialog'
 import { GeolocationDetailsSheet } from './GeolocationDetailsSheet'
 import { InUseAlertDialog } from '@/components/InUseAlertDialog'
 import { geolocationApi } from '@/lib/api/geolocation'
+import { CanWrite, withoutActionsColumn } from '@/components/CanWrite'
+import { useRoleAuth } from '@/hooks/use-role-auth'
 
 interface GeolocationClientProps {
   geolocations: Geolocation[]
@@ -24,6 +26,7 @@ const formatCount = (count: number): string => {
 }
 
 export function GeolocationClient({ geolocations: initialGeolocations }: GeolocationClientProps) {
+  const { canWrite } = useRoleAuth()
   const [activeGeolocations, setActiveGeolocations] = useState<Geolocation[]>(initialGeolocations)
   const [deletedGeolocations, setDeletedGeolocations] = useState<Geolocation[]>([])
   const [loading, setLoading] = useState(false)
@@ -173,10 +176,12 @@ export function GeolocationClient({ geolocations: initialGeolocations }: Geoloca
           <h2 className="text-lg sm:text-xl font-semibold tracking-tight">Geolocalizaciones</h2>
         </div>
 
-        <Button onClick={() => setCreateOpen(true)} className="cursor-pointer">
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Agregar Geolocalización
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setCreateOpen(true)} className="cursor-pointer">
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Agregar Geolocalización
+          </Button>
+        </CanWrite>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -196,7 +201,7 @@ export function GeolocationClient({ geolocations: initialGeolocations }: Geoloca
         </TabsList>
 
         <TabsContent value="activos" className="mt-4">
-          <ResponsiveDataList columns={columns} data={activeGeolocations} />
+          <ResponsiveDataList columns={canWrite() ? columns : withoutActionsColumn(columns)} data={activeGeolocations} />
         </TabsContent>
 
         <TabsContent value="baja" className="mt-4">
@@ -209,7 +214,7 @@ export function GeolocationClient({ geolocations: initialGeolocations }: Geoloca
               <p>No hay geolocalizaciones dadas de baja</p>
             </div>
           ) : (
-            <ResponsiveDataList columns={deletedColumns} data={deletedGeolocations} />
+            <ResponsiveDataList columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)} data={deletedGeolocations} />
           )}
         </TabsContent>
       </Tabs>

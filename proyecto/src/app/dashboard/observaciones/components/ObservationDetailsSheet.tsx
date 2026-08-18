@@ -36,6 +36,7 @@ import { Separator } from "@/components/ui/separator";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ObservationFullDetailsDialog } from "./ObservationFullDetailsDialog";
 import { EditObservationDialog } from "./EditObservationDialog";
+import { CanWrite } from "@/components/CanWrite";
 
 interface ObservationDetailsSheetProps {
   open: boolean;
@@ -454,56 +455,58 @@ export function ObservationDetailsSheet({
               </Card>
             )}
 
-            {/* Acciones */}
-            <Card className="border-0 shadow-sm bg-white">
-              <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
-                <h3 className="font-medium text-slate-900 mb-4">Acciones</h3>
+            <CanWrite>
+              {/* Acciones */}
+              <Card className="border-0 shadow-sm bg-white">
+                <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
+                  <h3 className="font-medium text-slate-900 mb-4">Acciones</h3>
 
-                <div className="space-y-1 xs:space-y-1.5 sm:space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base cursor-pointer"
-                    onClick={() => setEditOpen(true)}
-                  >
-                    <Edit3 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
-                    <span className="font-medium">Editar observación</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base cursor-pointer"
-                    onClick={() => setFullDetailsOpen(true)}
-                  >
-                    <FileText className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
-                    <span className="font-medium">Ver detalles completos</span>
-                  </Button>
-
-                  <Separator className="my-3" />
-
-                  {onDelete && (
+                  <div className="space-y-1 xs:space-y-1.5 sm:space-y-2">
                     <Button
                       variant="outline"
-                      className="w-full justify-start h-10 xs:h-12 sm:h-11 border-red-200 text-red-700 cursor-pointer text-xs xs:text-sm sm:text-base"
-                      onClick={() => onDelete(o.id_observation)}
+                      className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base cursor-pointer"
+                      onClick={() => setEditOpen(true)}
                     >
-                      <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
-                      <span className="font-medium">Eliminar observación</span>
+                      <Edit3 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
+                      <span className="font-medium">Editar observación</span>
                     </Button>
-                  )}
 
-                  {onRestore && (
                     <Button
                       variant="outline"
-                      className="w-full justify-start h-10 xs:h-12 sm:h-11 border-green-200 text-green-700 cursor-pointer text-xs xs:text-sm sm:text-base"
-                      onClick={() => onRestore(o.id_observation)}
+                      className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base cursor-pointer"
+                      onClick={() => setFullDetailsOpen(true)}
                     >
-                      <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
-                      <span className="font-medium">Restaurar observación</span>
+                      <FileText className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
+                      <span className="font-medium">Ver detalles completos</span>
                     </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+
+                    <Separator className="my-3" />
+
+                    {onDelete && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-10 xs:h-12 sm:h-11 border-red-200 text-red-700 cursor-pointer text-xs xs:text-sm sm:text-base"
+                        onClick={() => onDelete(o.id_observation)}
+                      >
+                        <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
+                        <span className="font-medium">Eliminar observación</span>
+                      </Button>
+                    )}
+
+                    {onRestore && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-10 xs:h-12 sm:h-11 border-green-200 text-green-700 cursor-pointer text-xs xs:text-sm sm:text-base"
+                        onClick={() => onRestore(o.id_observation)}
+                      >
+                        <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
+                        <span className="font-medium">Restaurar observación</span>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </CanWrite>
           </div>
         )}
       </SheetContent>

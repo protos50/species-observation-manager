@@ -14,6 +14,8 @@ import { locationApi } from "@/lib/api/location";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 import {
   Card,
   CardContent,
@@ -56,6 +58,7 @@ interface ClimateDataClientProps {
 export function ClimateDataClient({
   climateData: initialClimateData,
 }: ClimateDataClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeClimateData, setActiveClimateData] = useState<ClimateData[]>(initialClimateData);
   const [deletedClimateData, setDeletedClimateData] = useState<ClimateData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -248,13 +251,19 @@ export function ClimateDataClient({
   }, []);
 
   const columns = useMemo<ColumnDef<ClimateData>[]>(
-    () => getColumns(handleClimateDataAction, handleEdit, handleDeleteWithCheck),
-    [handleClimateDataAction, handleEdit, handleDeleteWithCheck]
+    () => {
+      const cols = getColumns(handleClimateDataAction, handleEdit, handleDeleteWithCheck);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleClimateDataAction, handleEdit, handleDeleteWithCheck, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<ClimateData>[]>(
-    () => getDeletedColumns(handleClimateDataAction),
-    [handleClimateDataAction]
+    () => {
+      const cols = getDeletedColumns(handleClimateDataAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleClimateDataAction, canWrite]
   );
 
   // Calcular estadísticas
@@ -283,10 +292,12 @@ export function ClimateDataClient({
             Datos Climáticos
           </h2>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Registro
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Registro
+          </Button>
+        </CanWrite>
       </div>
 
       {/* Estadísticas con Cards */}

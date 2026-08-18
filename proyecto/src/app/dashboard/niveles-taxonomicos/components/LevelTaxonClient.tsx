@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import { toast } from "sonner";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 type TaxonomicLevel = {
   id_taxonomic_level: number;
@@ -28,6 +30,7 @@ interface LevelTaxonClientProps {
 export function LevelTaxonClient({
   levels: initialLevels,
 }: LevelTaxonClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeLevelTaxons, setActiveLevelTaxons] =
     useState<TaxonomicLevel[]>(initialLevels);
   const [deletedLevelTaxons, setDeletedLevelTaxons] = useState<TaxonomicLevel[]>([]);
@@ -176,13 +179,19 @@ export function LevelTaxonClient({
   }, []);
 
   const columns = useMemo<ColumnDef<TaxonomicLevel>[]>(
-    () => getColumns(handleLevelAction, handleEdit),
-    [handleLevelAction, handleEdit]
+    () => {
+      const cols = getColumns(handleLevelAction, handleEdit);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleLevelAction, handleEdit, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<TaxonomicLevel>[]>(
-    () => getDeletedColumns(handleLevelAction),
-    [handleLevelAction]
+    () => {
+      const cols = getDeletedColumns(handleLevelAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleLevelAction, canWrite]
   );
 
   const activosCount = activeLevelTaxons.length;
@@ -204,7 +213,9 @@ export function LevelTaxonClient({
             Niveles taxonómicos
           </h2>
         </div>
-        <CreateLevelTaxonDialog onLevelTaxonCreated={handleLevelTaxonCreated} />
+        <CanWrite>
+          <CreateLevelTaxonDialog onLevelTaxonCreated={handleLevelTaxonCreated} />
+        </CanWrite>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

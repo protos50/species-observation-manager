@@ -12,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { CanWrite, withoutActionsColumn } from '@/components/CanWrite'
+import { useRoleAuth } from '@/hooks/use-role-auth'
 
 interface TaxonClientProps {
   taxa: Taxon[]
@@ -24,6 +26,7 @@ const formatCount = (count: number): string => {
 }
 
 export function TaxonClient({ taxa: initialTaxa, taxonomicLevels }: TaxonClientProps) {
+  const { canWrite } = useRoleAuth();
   const [taxa, setTaxa] = useState<Taxon[]>(initialTaxa)
   const [deletedTaxa, setDeletedTaxa] = useState<Taxon[]>([])
   const [selected, setSelected] = useState<Taxon | null>(null)
@@ -125,7 +128,10 @@ export function TaxonClient({ taxa: initialTaxa, taxonomicLevels }: TaxonClientP
     setFilters({})
   }, [])
 
-  const columns = useMemo(() => getTaxonColumns(onOpenDetails), [onOpenDetails])
+  const columns = useMemo(() => {
+    const cols = getTaxonColumns(onOpenDetails)
+    return canWrite() ? cols : withoutActionsColumn(cols)
+  }, [onOpenDetails, canWrite])
 
   useEffect(() => {
     loadDeletedTaxa()
@@ -135,7 +141,8 @@ export function TaxonClient({ taxa: initialTaxa, taxonomicLevels }: TaxonClientP
   const bajaCount = deletedTaxa.length
 
   const deletedColumns = useMemo(
-    () => [
+    () => {
+      const cols = [
       ...getTaxonColumns(() => {}),
       {
         id: 'restore',
@@ -152,8 +159,10 @@ export function TaxonClient({ taxa: initialTaxa, taxonomicLevels }: TaxonClientP
           </Button>
         ),
       },
-    ],
-    [handleRestore],
+      ]
+      return canWrite() ? cols : withoutActionsColumn(cols)
+    },
+    [handleRestore, canWrite],
   )
 
   return (
@@ -166,7 +175,9 @@ export function TaxonClient({ taxa: initialTaxa, taxonomicLevels }: TaxonClientP
             </div>
             <h2 className="text-lg sm:text-xl font-semibold tracking-tight">Taxones</h2>
           </div>
-          <CreateTaxonDialog onTaxonCreated={onTaxonCreated} />
+          <CanWrite>
+            <CreateTaxonDialog onTaxonCreated={onTaxonCreated} />
+          </CanWrite>
         </div>
 
         <TaxonFilters

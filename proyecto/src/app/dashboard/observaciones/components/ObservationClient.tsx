@@ -14,6 +14,8 @@ import { ObservationDetailsSheet } from './ObservationDetailsSheet'
 import { CreateObservationDialog } from './CreateObservationDialog'
 import { EditObservationDialog } from './EditObservationDialog'
 import { toast } from 'sonner'
+import { CanWrite, withoutActionsColumn } from '@/components/CanWrite'
+import { useRoleAuth } from '@/hooks/use-role-auth'
 
 interface ObservationClientProps {
   observations: Observation[]
@@ -86,6 +88,7 @@ const extractFiltersFromUrl = (searchParams: URLSearchParams): AdvancedObservati
 }
 
 export function ObservationClient({ observations: initial }: ObservationClientProps) {
+  const { canWrite } = useRoleAuth()
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -252,10 +255,12 @@ export function ObservationClient({ observations: initial }: ObservationClientPr
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={() => setCreateOpen(true)} className="cursor-pointer">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Agregar Observación
-          </Button>
+          <CanWrite>
+            <Button onClick={() => setCreateOpen(true)} className="cursor-pointer">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Agregar Observación
+            </Button>
+          </CanWrite>
           {activeTab === 'activos' && (
             <select
               value={limit}
@@ -297,7 +302,7 @@ export function ObservationClient({ observations: initial }: ObservationClientPr
           />
 
           <ResponsiveDataList
-            columns={columns}
+            columns={canWrite() ? columns : withoutActionsColumn(columns)}
             data={data}
             cardsProps={{
               showFieldLabels: true,
@@ -351,7 +356,7 @@ export function ObservationClient({ observations: initial }: ObservationClientPr
             </div>
           ) : (
             <ResponsiveDataList
-              columns={deletedColumns}
+              columns={canWrite() ? deletedColumns : withoutActionsColumn(deletedColumns)}
               data={deletedData}
               cardsProps={{
                 showFieldLabels: true,

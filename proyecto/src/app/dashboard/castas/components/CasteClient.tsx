@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import { toast } from "sonner";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 type Caste = {
   id_caste: number;
@@ -26,6 +28,7 @@ interface CasteClientProps {
 }
 
 export function CasteClient({ castes: initialCastes }: CasteClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeCastes, setActiveCastes] = useState<Caste[]>(initialCastes);
   const [deletedCastes, setDeletedCastes] = useState<Caste[]>([]);
   const [loading, setLoading] = useState(false);
@@ -168,13 +171,19 @@ export function CasteClient({ castes: initialCastes }: CasteClientProps) {
   }, []);
 
   const columns = useMemo<ColumnDef<Caste>[]>(
-    () => getColumns(handleCasteAction, handleEdit),
-    [handleCasteAction, handleEdit]
+    () => {
+      const cols = getColumns(handleCasteAction, handleEdit);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleCasteAction, handleEdit, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<Caste>[]>(
-    () => getDeletedColumns(handleCasteAction),
-    [handleCasteAction]
+    () => {
+      const cols = getDeletedColumns(handleCasteAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleCasteAction, canWrite]
   );
 
   const activosCount = activeCastes.length;
@@ -196,7 +205,9 @@ export function CasteClient({ castes: initialCastes }: CasteClientProps) {
             Castas de Hormigas
           </h2>
         </div>
-        <CreateCasteDialog onCasteCreated={handleCasteCreated} />
+        <CanWrite>
+          <CreateCasteDialog onCasteCreated={handleCasteCreated} />
+        </CanWrite>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
