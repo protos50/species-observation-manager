@@ -101,22 +101,48 @@ Esta carpeta contiene la documentación completa sobre la implementación de seg
 
 ### Para Desarrolladores Backend
 
-1. **Proteger un endpoint:**
+1. **Endpoint protegido (es lo que pasa por defecto):**
+
+   El `JwtAuthGuard` esta registrado de forma global en `main.ts`, asi que un
+   endpoint ya nace exigiendo token. No hace falta declarar nada.
+
    ```typescript
-   @UseGuards(JwtAuthGuard)
    @Get('profile')
    getProfile(@CurrentUser() user: User) { }
    ```
 
-2. **Proteger por roles:**
+2. **Endpoint publico:**
+
    ```typescript
-   @UseGuards(JwtAuthGuard, RolesGuard)
-   @Roles('admin')
-   @Get('users')
-   getAllUsers() { }
+   @Public()
+   @Post('login')
+   login(@Body() dto: LoginDto) { }
    ```
 
-3. **Hashear contraseña:**
+3. **Restringir por rol:**
+
+   El `RolesGuard` tambien es global y corre despues del `JwtAuthGuard`, de modo
+   que evalua los roles sobre el usuario ya autenticado. Se usa el enum `Role`
+   para evitar errores de tipeo:
+
+   ```typescript
+   @Roles(Role.ADMIN)              // solo administradores
+   @Get()
+   findAll() { }
+
+   @Roles(...WRITE_ROLES)          // administradores y colaboradores
+   @Post()
+   create(@Body() dto: CreateDto) { }
+   ```
+
+   El decorador tambien se puede poner sobre la clase, y ahi aplica a todo el
+   controlador. Es lo que hacen `users`, `rol`, `service` y `contact`, que son
+   exclusivos de administracion.
+
+   Un endpoint sin `@Roles` queda accesible para cualquier usuario autenticado:
+   asi estan las consultas de lectura.
+
+4. **Hashear contraseña:**
    ```typescript
    const hashed = await bcrypt.hash(password, 10);
    ```

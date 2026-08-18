@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import { toast } from "sonner";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 type Person = {
   id_person: number;
@@ -29,6 +31,7 @@ interface PersonClientProps {
 }
 
 export function PersonClient({ persons: initialPersons }: PersonClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activePersons, setActivePersons] = useState<Person[]>(initialPersons);
   const [deletedPersons, setDeletedPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(false);
@@ -176,13 +179,19 @@ export function PersonClient({ persons: initialPersons }: PersonClientProps) {
   }, []);
 
   const columns = useMemo<ColumnDef<Person>[]>(
-    () => getColumns(handlePersonAction, handleEdit),
-    [handlePersonAction, handleEdit]
+    () => {
+      const cols = getColumns(handlePersonAction, handleEdit);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handlePersonAction, handleEdit, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<Person>[]>(
-    () => getDeletedColumns(handlePersonAction),
-    [handlePersonAction]
+    () => {
+      const cols = getDeletedColumns(handlePersonAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handlePersonAction, canWrite]
   );
 
   const activosCount = activePersons.length;
@@ -204,7 +213,9 @@ export function PersonClient({ persons: initialPersons }: PersonClientProps) {
             Identificadores y/o colectores
           </h2>
         </div>
-        <CreatePersonDialog onPersonCreated={handlePersonCreated} />
+        <CanWrite>
+          <CreatePersonDialog onPersonCreated={handlePersonCreated} />
+        </CanWrite>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

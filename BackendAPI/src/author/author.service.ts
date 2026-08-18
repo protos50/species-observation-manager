@@ -7,12 +7,14 @@ import { UpdateAuthorDto } from './dto/update-author.dto';
 export class AuthorService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un autor.
   create(createAuthorDto: CreateAuthorDto) {
     return this.prismaService.author.create({
       data: createAuthorDto,
     });
   }
 
+  // Lista los autores activos.
   findAll() {
     return this.prismaService.author.findMany({
       include: {
@@ -24,6 +26,7 @@ export class AuthorService {
       },
     });
   }
+  // Lista los autores que fueron dados de baja.
   findDeleted() {
     return (this.prismaService.author.findMany as any)({
       where: {
@@ -34,6 +37,7 @@ export class AuthorService {
     });
   }
 
+  // Busca un autor por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const author = await this.prismaService.author.findUnique({
       where: { id_author: id },
@@ -54,6 +58,7 @@ export class AuthorService {
     return author;
   }
 
+  // Actualiza los datos de un autor.
   async update(id: number, updateAuthorDto: UpdateAuthorDto) {
     try {
       return await this.prismaService.author.update({
@@ -65,6 +70,7 @@ export class AuthorService {
     }
   }
 
+  // Da de baja un autor. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.author.delete({
@@ -76,6 +82,7 @@ export class AuthorService {
       );
     }
   }
+  // Vuelve a activar un autor que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.author.update as any)({
@@ -88,6 +95,7 @@ export class AuthorService {
     }
   }
 
+  // Avisa si el autor está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     const observations = await this.prismaService.observation.findMany({
       where: {

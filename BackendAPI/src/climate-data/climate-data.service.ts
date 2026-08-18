@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ClimateDataService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un registro climático.
   async create(createClimateDatumDto: CreateClimateDatumDto) {
     try {
       return await this.prismaService.climateData.create({
@@ -31,6 +32,7 @@ export class ClimateDataService {
     }
   }
 
+  // Lista los registros climáticos activos.
   findAll() {
     return this.prismaService.climateData.findMany({
       include: {
@@ -54,6 +56,7 @@ export class ClimateDataService {
     });
   }
 
+  // Trae el clima de una localidad en una fecha puntual.
   async findByLocalityAndDate(localityId: number, date: string) {
     // Buscar datos climáticos para una localidad y fecha específica
     // Normalizar fecha a medianoche UTC para comparar correctamente con @db.Date
@@ -84,6 +87,7 @@ export class ClimateDataService {
     return result;
   }
 
+  // Trae todos los registros climáticos de una localidad.
   async findByLocality(localityId: number) {
     // Obtener todos los datos climáticos de una localidad
     return this.prismaService.climateData.findMany({
@@ -97,6 +101,7 @@ export class ClimateDataService {
     });
   }
 
+  // Busca un registro climático por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const climateData = await this.prismaService.climateData.findUnique({
       where: { id_climate_data: id },
@@ -109,6 +114,7 @@ export class ClimateDataService {
     return climateData;
   }
 
+  // Actualiza los datos de un registro climático.
   async update(id: number, updateClimateDatumDto: UpdateClimateDatumDto) {
     try {
       return await this.prismaService.climateData.update({
@@ -120,6 +126,7 @@ export class ClimateDataService {
     }
   }
 
+  // Da de baja un registro climático. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.climateData.delete({

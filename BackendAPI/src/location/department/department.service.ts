@@ -7,12 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class DepartmentService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un departamento.
   create(createDepartmentDto: CreateDepartmentDto) {
     return this.prismaService.department.create({
       data: createDepartmentDto,
     });
   }
 
+  // Lista los departamentos activos.
   findAll() {
     return this.prismaService.department.findMany({
       include: {
@@ -25,6 +27,7 @@ export class DepartmentService {
     });
   }
 
+  // Lista los departamentos de una provincia.
   async findByProvince(provinceId: number) {
     return this.prismaService.department.findMany({
       where: {
@@ -36,6 +39,7 @@ export class DepartmentService {
     });
   }
 
+  // Busca un departamento por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const department = await this.prismaService.department.findUnique({
       where: { id_department: id },
@@ -56,6 +60,7 @@ export class DepartmentService {
     return department;
   }
 
+  // Actualiza los datos de un departamento.
   async update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
     try {
       return await this.prismaService.department.update({
@@ -67,6 +72,7 @@ export class DepartmentService {
     }
   }
 
+  // Da de baja un departamento. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.department.delete({
@@ -77,8 +83,9 @@ export class DepartmentService {
     }
   }
 
+  // Avisa si el departamento está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
-    // Get localities for this department
+    // Trae las localidades de este departamento
     const localities = await this.prismaService.locality.findMany({
       where: {
         id_department: id,
@@ -95,7 +102,7 @@ export class DepartmentService {
       },
     });
 
-    // Count total observations through the hierarchy
+    // Cuenta el total de observaciones que cuelgan de toda la jerarquía
     const observations = await this.prismaService.observation.findMany({
       where: {
         deleted_at: null,
@@ -126,6 +133,7 @@ export class DepartmentService {
     };
   }
 
+  // Lista los departamentos que fueron dados de baja.
   async findDeleted() {
     return await (this.prismaService.department as any).findMany({
       withDeleted: true,
@@ -160,6 +168,7 @@ export class DepartmentService {
     });
   }
 
+  // Vuelve a activar un departamento que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.department as any).update({

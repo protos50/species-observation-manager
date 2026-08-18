@@ -17,7 +17,7 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Check if route is marked as public
+    // Mira si la ruta esta marcada como publica con @Public()
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -39,7 +39,7 @@ export class JwtAuthGuard implements CanActivate {
         secret: process.env.jwtSecretKey,
       });
       
-      // Attach user to request object for use in route handlers
+      // Deja el usuario colgado del request para que lo use el controlador
       request['user'] = payload;
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');

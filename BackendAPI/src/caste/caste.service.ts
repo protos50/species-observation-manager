@@ -7,12 +7,14 @@ import { PrismaService } from '../prisma/prisma.service';
 export class CasteService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta una casta.
   create(createCasteDto: CreateCasteDto) {
     return this.prismaService.caste.create({
       data: createCasteDto,
     });
   }
 
+  // Lista las castas activas.
   findAll() {
     return this.prismaService.caste.findMany({
       include: {
@@ -25,6 +27,7 @@ export class CasteService {
     });
   }
 
+  // Lista las castas que fueron dadas de baja.
   findDeleted() {
     return (this.prismaService.caste.findMany as any)({
       where: {
@@ -36,6 +39,7 @@ export class CasteService {
     });
   }
 
+  // Busca una casta por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const caste = await this.prismaService.caste.findUnique({
       where: { id_caste: id },
@@ -60,6 +64,7 @@ export class CasteService {
     return caste;
   }
 
+  // Actualiza los datos de una casta.
   async update(id: number, updateCasteDto: UpdateCasteDto) {
     try {
       return await this.prismaService.caste.update({
@@ -71,6 +76,7 @@ export class CasteService {
     }
   }
 
+  // Da de baja una casta. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.caste.delete({
@@ -83,6 +89,7 @@ export class CasteService {
     }
   }
 
+  // Vuelve a activar una casta que estaba dada de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.caste.update as any)({
@@ -95,6 +102,7 @@ export class CasteService {
     }
   }
 
+  // Avisa si la casta está enganchada a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     const observations = await this.prismaService.observation.findMany({
       where: {

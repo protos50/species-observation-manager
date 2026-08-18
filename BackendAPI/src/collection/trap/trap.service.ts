@@ -7,16 +7,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TrapService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta una trampa.
   create(createTrapDto: CreateTrapDto) {
     return this.prismaService.trap.create({
       data: createTrapDto,
     });
   }
 
+  // Lista las trampas activas.
   findAll() {
     return this.prismaService.trap.findMany();
   }
 
+  // Lista las trampas que fueron dadas de baja.
   findDeleted() {
     return (this.prismaService.trap.findMany as any)({
       where: {
@@ -28,6 +31,7 @@ export class TrapService {
     });
   }
 
+  // Busca una trampa por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const trap = await this.prismaService.trap.findUnique({
       where: { id_trap: id },
@@ -43,6 +47,7 @@ export class TrapService {
     return trap;
   }
 
+  // Actualiza los datos de una trampa.
   async update(id: number, updateTrapDto: UpdateTrapDto) {
     try {
       return await this.prismaService.trap.update({
@@ -54,6 +59,7 @@ export class TrapService {
     }
   }
 
+  // Da de baja una trampa. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.trap.delete({
@@ -66,6 +72,7 @@ export class TrapService {
     }
   }
 
+  // Vuelve a activar una trampa que estaba dada de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.trap.update as any)({
@@ -78,8 +85,9 @@ export class TrapService {
     }
   }
 
+  // Avisa si la trampa está enganchada a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
-    // Find collections using this trap
+    // Busca colecciones que estén usando esta trampa
     const collections = await this.prismaService.collection.findMany({
       where: {
         id_trap: id,

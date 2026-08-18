@@ -7,12 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ProvinceService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta una provincia.
   create(createProvinceDto: CreateProvinceDto) {
     return this.prismaService.province.create({
       data: createProvinceDto,
     });
   }
 
+  // Lista las provincias activas.
   findAll() {
     return this.prismaService.province.findMany({
       include: {
@@ -21,6 +23,7 @@ export class ProvinceService {
     });
   }
 
+  // Lista las provincias de un país.
   async findByCountry(countryId: number) {
     return this.prismaService.province.findMany({
       where: {
@@ -32,6 +35,7 @@ export class ProvinceService {
     });
   }
 
+  // Busca una provincia por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const province = await this.prismaService.province.findUnique({
       where: { id_province: id },
@@ -48,6 +52,7 @@ export class ProvinceService {
     return province;
   }
 
+  // Actualiza los datos de una provincia.
   async update(id: number, updateProvinceDto: UpdateProvinceDto) {
     try {
       return await this.prismaService.province.update({
@@ -59,6 +64,7 @@ export class ProvinceService {
     }
   }
 
+  // Da de baja una provincia. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.province.delete({
@@ -69,8 +75,9 @@ export class ProvinceService {
     }
   }
 
+  // Avisa si la provincia está enganchada a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
-    // Get departments for this province
+    // Trae los departamentos de esta provincia
     const departments = await this.prismaService.department.findMany({
       where: {
         id_province: id,
@@ -92,7 +99,7 @@ export class ProvinceService {
       },
     });
 
-    // Count total observations through the hierarchy
+    // Cuenta el total de observaciones que cuelgan de toda la jerarquía
     const observations = await this.prismaService.observation.findMany({
       where: {
         deleted_at: null,
@@ -129,6 +136,7 @@ export class ProvinceService {
     };
   }
 
+  // Lista las provincias que fueron dadas de baja.
   async findDeleted() {
     return await (this.prismaService.province as any).findMany({
       withDeleted: true,
@@ -157,6 +165,7 @@ export class ProvinceService {
     });
   }
 
+  // Vuelve a activar una provincia que estaba dada de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.province as any).update({

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, RotateCcw, Eye, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { formatDateLocal, formatDateTimeLocalFromUtc } from "@/lib/utils/dateUtils";
+import { CanWrite } from "@/components/CanWrite";
 
 // ============ COUNTRIES ============
 interface Country {
@@ -71,22 +72,26 @@ export function getCountryColumns(
                 <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
               </Link>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(country)}
-              className="h-8 w-8 p-0 cursor-pointer"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(country)}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(country)}
+                className="h-8 w-8 p-0 cursor-pointer"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </CanWrite>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(country)}
+                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </CanWrite>
           </div>
         );
       },
@@ -129,15 +134,17 @@ export function getDeletedCountryColumns(
         const country = row.original;
         return (
           <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRestore(country)}
-              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRestore(country)}
+                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
+              </Button>
+            </CanWrite>
           </div>
         );
       },
@@ -210,22 +217,26 @@ export function getProvinceColumns(
                 <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
               </Link>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(province)}
-              className="h-8 w-8 p-0 cursor-pointer"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(province)}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(province)}
+                className="h-8 w-8 p-0 cursor-pointer"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </CanWrite>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(province)}
+                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </CanWrite>
           </div>
         );
       },
@@ -268,15 +279,17 @@ export function getDeletedProvinceColumns(
         const province = row.original;
         return (
           <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRestore(province)}
-              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRestore(province)}
+                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
+              </Button>
+            </CanWrite>
           </div>
         );
       },
@@ -349,22 +362,26 @@ export function getDepartmentColumns(
                 <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
               </Link>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(department)}
-              className="h-8 w-8 p-0 cursor-pointer"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(department)}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(department)}
+                className="h-8 w-8 p-0 cursor-pointer"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </CanWrite>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(department)}
+                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </CanWrite>
           </div>
         );
       },
@@ -407,15 +424,17 @@ export function getDeletedDepartmentColumns(
         const department = row.original;
         return (
           <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRestore(department)}
-              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRestore(department)}
+                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
+              </Button>
+            </CanWrite>
           </div>
         );
       },
@@ -505,22 +524,26 @@ export function getLocalityColumns(
         const locality = row.original;
         return (
           <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(locality)}
-              className="h-8 w-8 p-0 cursor-pointer"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(locality)}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(locality)}
+                className="h-8 w-8 p-0 cursor-pointer"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </CanWrite>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(locality)}
+                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </CanWrite>
           </div>
         );
       },
@@ -563,15 +586,17 @@ export function getDeletedLocalityColumns(
         const locality = row.original;
         return (
           <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRestore(locality)}
-              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
-            </Button>
+            <CanWrite>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRestore(locality)}
+                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 cursor-pointer"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="sr-only sm:not-sr-only ml-1 text-sm">Restaurar</span>
+              </Button>
+            </CanWrite>
           </div>
         );
       },

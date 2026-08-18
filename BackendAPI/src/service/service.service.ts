@@ -7,12 +7,14 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 export class ServiceService {
   constructor(private prisma: PrismaService) {}
 
+  // Da de alta un servicio.
   async create(createServiceDto: CreateServiceDto) {
     return await this.prisma.service.create({
       data: createServiceDto,
     });
   }
 
+  // Lista los servicios activos.
   async findAll() {
     // Middleware automatically filters deleted_at = null
     return await this.prisma.service.findMany({
@@ -21,6 +23,7 @@ export class ServiceService {
       },
     });
   }
+  // Lista los servicios que fueron dados de baja.
   findDeleted() {
     return (this.prisma.service.findMany as any)({
       where: {
@@ -31,6 +34,7 @@ export class ServiceService {
     });
   }
 
+  // Busca un servicio por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     // Middleware automatically filters deleted_at = null
     const service = await this.prisma.service.findUnique({
@@ -51,6 +55,7 @@ export class ServiceService {
     return service;
   }
 
+  // Actualiza los datos de un servicio.
   async update(id: number, updateServiceDto: UpdateServiceDto) {
     await this.findOne(id); // Validate existence
 
@@ -60,14 +65,16 @@ export class ServiceService {
     });
   }
 
+  // Da de baja un servicio. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     await this.findOne(id); // Validate existence
 
-    // Soft delete: middleware converts delete to update with deleted_at
+    // Baja lógica: el middleware convierte el delete en un update con deleted_at
     return await this.prisma.service.delete({
       where: { id_service: id },
     });
   }
+  // Vuelve a activar un servicio que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prisma.service.update as any)({
@@ -80,9 +87,10 @@ export class ServiceService {
     }
   }
 
+  // Avisa si el servicio está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     // Services are referenced through Collection -> Observation
-    // For now, return empty observations (services are rarely deleted)
+    // Por ahora devuelve vacio: los servicios casi nunca se dan de baja
     return {
       inUse: false,
       count: 0,

@@ -6,20 +6,18 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
 
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
-@UseGuards(RolesGuard)
-@Roles('admin') // Only admin users can access these endpoints
+@Roles(Role.ADMIN)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

@@ -2,13 +2,14 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   // Configure CORS origins via environment variable. Multiple origins supported, comma-separated.
-  // Defaults cover local dev and production domain.
+  // Por defecto cubre el desarrollo local y el dominio de produccion.
   const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000,https://192-99-145-175.sslip.io')
     .split(',')
     .map((o) => o.trim())
@@ -33,10 +34,15 @@ async function bootstrap() {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, swaggerDocument);
   
-  // Apply JWT authentication guard globally
+  // Guards globales. El orden importa: primero se autentica (JwtAuthGuard
+  // valida el token y adjunta request.user) y recien despues se autoriza
+  // (RolesGuard lee request.user.sub.role y lo contrasta con @Roles(...)).
   const reflector = app.get(Reflector);
   const jwtService = app.get(JwtService);
-  app.useGlobalGuards(new JwtAuthGuard(jwtService, reflector));
+  app.useGlobalGuards(
+    new JwtAuthGuard(jwtService, reflector),
+    new RolesGuard(reflector),
+  );
   
   await app.listen(process.env.PORT ?? 4000);
 }

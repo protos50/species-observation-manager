@@ -3,10 +3,13 @@ import { RolService } from './rol.service';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
 
 @ApiTags('rol')
 @ApiBearerAuth()
 @Controller('rol')
+@Roles(Role.ADMIN)
 export class RolController {
   constructor(private readonly rolService: RolService) {}
 

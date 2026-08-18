@@ -101,14 +101,18 @@ export function EditTaxonDialog({
         taxonomyApi.taxa.getAll(),
       ]);
       setTaxonomicLevels(levels);
-      // Si hay taxón cargado, filtramos por su nivel actual - 1; si no, dejamos todos
+      // Como padre sirve cualquier taxon de un nivel superior, no solo el
+      // inmediato de arriba: la clasificacion cargada se saltea niveles.
+      // Filtrar por nivel superior tambien evita ciclos, porque los
+      // descendientes siempre estan en un nivel mas bajo.
       if (taxon) {
         const currentLevelId =
           taxon.id_taxonomic_level ?? taxon.taxonomic_level?.id_taxonomic_level;
-        const parentLevelId = (currentLevelId ?? 0) - 1;
         setParentTaxa(
-          parentLevelId > 0
-            ? allTaxa.filter((t) => t.id_taxonomic_level === parentLevelId)
+          currentLevelId
+            ? allTaxa
+                .filter((t) => t.id_taxonomic_level < currentLevelId)
+                .filter((t) => t.id_taxon !== taxon.id_taxon)
             : []
         );
       } else {
@@ -162,20 +166,17 @@ export function EditTaxonDialog({
   useEffect(() => {
     if (!open) return;
     if (selectedLevelId) {
-      const parentLevelId = selectedLevelId - 1;
-      if (parentLevelId < 1) {
-        setParentTaxa([]);
-        // si el nivel es el más alto, forzamos parent_id a null
-        form.setValue("parent_id", null, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-        return;
-      }
-      // Usamos endpoint por nivel para eficiencia
+      // Ofrecemos todos los taxones de niveles superiores al elegido
       taxonomyApi.taxa
-        .getByLevel(parentLevelId)
-        .then((list) => {
+        .getAll()
+        .then((todos) => {
+          const list = todos
+            .filter((t) => t.id_taxonomic_level < selectedLevelId)
+            .sort(
+              (a, b) =>
+                a.id_taxonomic_level - b.id_taxonomic_level ||
+                a.name.localeCompare(b.name)
+            );
           // Evitar seleccionarse a sí mismo si estamos editando
           const filtered = taxon
             ? list.filter((t) => t.id_taxon !== taxon.id_taxon)

@@ -13,6 +13,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
+  // Valida las credenciales y devuelve el token de acceso y el de refresco.
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto);
     const payload = {
@@ -23,13 +24,13 @@ export class AuthService {
       },
     };
 
-    // Get token expiration from environment variables with fallbacks
+    // Lee los vencimientos del entorno, con valores por defecto si no están
     const accessTokenExpiration =
       process.env.JWT_ACCESS_TOKEN_EXPIRATION || '1h';
     const refreshTokenExpiration =
       process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d';
 
-    // Convert string expiration to seconds for JWT v11 compatibility
+    // Pasa el vencimiento a segundos, que es lo que espera la versión 11 de JWT
     const expirationToSeconds = {
       '20s': 20,
       '1h': 3600,
@@ -47,7 +48,7 @@ export class AuthService {
     return {
       user,
       backendTokens: {
-        // Access token with configurable duration from env
+        // Token de acceso, con la duración que venga configurada en el entorno
         accessToken: await this.jwtService.signAsync(payload, {
           expiresIn: accessTokenExpiresIn,
           secret: jwtSecret,

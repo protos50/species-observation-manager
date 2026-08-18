@@ -7,12 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TaxonService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un taxón.
   create(createTaxonDto: CreateTaxonDto) {
     return this.prismaService.taxon.create({
       data: createTaxonDto,
     });
   }
 
+  // Lista los taxones activos.
   findAll() {
     return this.prismaService.taxon.findMany({
       include: {
@@ -27,6 +29,7 @@ export class TaxonService {
     });
   }
 
+  // Busca un taxón por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const taxon = await this.prismaService.taxon.findUnique({
       where: { id_taxon: id },
@@ -53,6 +56,7 @@ export class TaxonService {
     return taxon;
   }
 
+  // Actualiza los datos de un taxón.
   async update(id: number, updateTaxonDto: UpdateTaxonDto) {
     try {
       return await this.prismaService.taxon.update({
@@ -64,6 +68,7 @@ export class TaxonService {
     }
   }
 
+  // Da de baja un taxón. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.taxon.delete({
@@ -88,6 +93,7 @@ export class TaxonService {
     return result;
   }
 
+  // Baja por el árbol y trae todo lo que cuelga de un taxón.
   async getTaxonomicDescendants(id: number) {
     // Llamada a la función almacenada get_taxonomic_descendants
     const result = await this.prismaService.$queryRaw`
@@ -97,6 +103,7 @@ export class TaxonService {
     return result;
   }
 
+  // Busca taxones por nombre.
   async searchTaxa(searchTerm: string) {
     // Llamada a la función almacenada search_taxa
     const result = await this.prismaService.$queryRaw`
@@ -135,6 +142,7 @@ export class TaxonService {
     });
   }
 
+  // Avisa si el taxón está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     const observations = await this.prismaService.observation.findMany({
       where: {
@@ -170,6 +178,7 @@ export class TaxonService {
     };
   }
 
+  // Lista los taxones que fueron dados de baja.
   async findDeleted() {
     return await (this.prismaService.taxon as any).findMany({
       withDeleted: true,
@@ -193,6 +202,7 @@ export class TaxonService {
     });
   }
 
+  // Vuelve a activar un taxón que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.taxon as any).update({

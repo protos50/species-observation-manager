@@ -17,6 +17,8 @@ import { SearchObservationDto } from './dto/search-observation.dto';
 import { ExportCsvDto } from './dto/export-csv.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../auth/enums/role.enum';
 
 @ApiTags('observation')
 @ApiBearerAuth()
@@ -25,15 +27,16 @@ export class ObservationController {
   constructor(private readonly observationService: ObservationService) {}
 
   /**
-   * Create a new collection and observation together
+   * Crea la coleccion y la observacion de una sola vez.
    */
+  @Roles(...WRITE_ROLES)
   @Post('with-collection')
   createWithCollection(@Body() createDto: CreateCollectionObservationDto) {
     return this.observationService.createCollectionAndObservation(createDto);
   }
 
   /**
-   * Get all observations with pagination
+   * Lista las observaciones paginadas.
    */
   @Get()
   findAll(@Query() pagination: PaginationQueryDto) {
@@ -41,7 +44,7 @@ export class ObservationController {
   }
 
   /**
-   * Search observations with filters and pagination
+   * Busca observaciones con los filtros del panel, paginadas.
    */
   @Get('search')
   search(@Query() searchDto: SearchObservationDto) {
@@ -89,6 +92,7 @@ export class ObservationController {
   /**
    * Update an observation
    */
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -98,8 +102,9 @@ export class ObservationController {
   }
 
   /**
-   * Delete an observation and its associated collection
+   * Da de baja una observacion junto con su coleccion.
    */
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.observationService.remove(+id);
@@ -108,6 +113,7 @@ export class ObservationController {
   /**
    * Restore a soft-deleted observation
    */
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.observationService.restore(+id);
@@ -118,15 +124,15 @@ export class ObservationController {
    */
 
   /**
-   * Export observations data to CSV for R analytics
-   * Replicates original Excel structure for compatibility
+   * Exporta las observaciones a CSV para analizarlas en R.
+   * Respeta la estructura del Excel original para no romper lo que ya se usaba.
    */
   @Get('export/csv')
   async exportCsv(@Query() filters: ExportCsvDto, @Res() res: Response) {
     try {
       const data = await this.observationService.exportToCsv(filters);
 
-      // Convert to CSV format
+      // Arma el CSV
       if (data.length === 0) {
         return res
           .status(200)
@@ -135,7 +141,7 @@ export class ObservationController {
 
       const headers = Object.keys(data[0]);
 
-      // Function to properly escape CSV values
+      // Escapa cada valor para que el CSV no se rompa
       const escapeCsvValue = (value: any): string => {
         if (value === null || value === undefined) {
           return '';
@@ -143,7 +149,7 @@ export class ObservationController {
 
         const stringValue = String(value);
 
-        // If value contains comma, quote, newline, or starts/ends with space, wrap in quotes
+        // Si el valor trae comas, comillas, saltos de linea o espacios al borde, va entrecomillado
         if (
           stringValue.includes(',') ||
           stringValue.includes('"') ||
@@ -152,7 +158,7 @@ export class ObservationController {
           stringValue.startsWith(' ') ||
           stringValue.endsWith(' ')
         ) {
-          // Escape internal quotes by doubling them and wrap the whole value in quotes
+          // Las comillas internas se duplican, que es como las espera el formato
           return `"${stringValue.replace(/"/g, '""')}"`;
         }
 
@@ -166,7 +172,7 @@ export class ObservationController {
         ),
       ].join('\n');
 
-      // Set headers for file download
+      // Cabeceras para que el navegador lo baje como archivo
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `observaciones_gema_${timestamp}.csv`;
 
@@ -176,7 +182,7 @@ export class ObservationController {
         `attachment; filename="${filename}"`,
       );
 
-      // Add UTF-8 BOM for proper Excel compatibility
+      // El BOM va para que Excel respete los acentos
       res.write('\uFEFF');
       res.end(csvContent);
     } catch (error) {

@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import { toast } from "sonner";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 type PreservationMethod = {
   id_preservation_method: number;
@@ -26,6 +28,7 @@ interface MethodClientProps {
 }
 
 export function MethodClient({ methods: initialMethods }: MethodClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeMethods, setActiveMethods] =
     useState<PreservationMethod[]>(initialMethods);
   const [deletedMethods, setDeletedMethods] = useState<PreservationMethod[]>([]);
@@ -183,13 +186,19 @@ export function MethodClient({ methods: initialMethods }: MethodClientProps) {
   }, []);
 
   const columns = useMemo<ColumnDef<PreservationMethod>[]>(
-    () => getColumns(handleMethodAction, handleEdit),
-    [handleMethodAction, handleEdit]
+    () => {
+      const cols = getColumns(handleMethodAction, handleEdit);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleMethodAction, handleEdit, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<PreservationMethod>[]>(
-    () => getDeletedColumns(handleMethodAction),
-    [handleMethodAction]
+    () => {
+      const cols = getDeletedColumns(handleMethodAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleMethodAction, canWrite]
   );
 
   const activosCount = activeMethods.length;
@@ -211,7 +220,9 @@ export function MethodClient({ methods: initialMethods }: MethodClientProps) {
             Métodos de preservación
           </h2>
         </div>
-        <CreateMethodDialog onMethodCreated={handleMethodCreated} />
+        <CanWrite>
+          <CreateMethodDialog onMethodCreated={handleMethodCreated} />
+        </CanWrite>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

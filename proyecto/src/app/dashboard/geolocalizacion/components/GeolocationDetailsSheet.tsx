@@ -23,6 +23,7 @@ import {
   Map,
 } from "lucide-react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { CanWrite } from "@/components/CanWrite";
 
 interface GeolocationDetailsSheetProps {
   open: boolean;
@@ -261,44 +262,46 @@ export function GeolocationDetailsSheet({
               </Card>
             )}
 
-            {/* Acciones */}
-            <Card className="border-0 shadow-sm bg-white">
-              <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
-                <div className="flex flex-col xs:flex-row gap-2">
-                  {onEdit && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-2"
-                      onClick={() => onEdit(g)}
-                    >
-                      <Edit3 className="h-4 w-4" />
-                      Editar
-                    </Button>
-                  )}
-                  {onDelete && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => {
-                        if (
-                          confirm(
-                            "¿Estás seguro de que deseas eliminar esta geolocalización?"
-                          )
-                        ) {
-                          onDelete(g.id_geolocation);
-                          onClose();
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Eliminar
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <CanWrite>
+              {/* Acciones */}
+              <Card className="border-0 shadow-sm bg-white">
+                <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
+                  <div className="flex flex-col xs:flex-row gap-2">
+                    {onEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 gap-2"
+                        onClick={() => onEdit(g)}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                        Editar
+                      </Button>
+                    )}
+                    {onDelete && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              "¿Estás seguro de que deseas eliminar esta geolocalización?"
+                            )
+                          ) {
+                            onDelete(g.id_geolocation);
+                            onClose();
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Eliminar
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </CanWrite>
           </div>
         )}
       </SheetContent>

@@ -3,6 +3,8 @@ import { LocalityService } from './locality.service';
 import { CreateLocalityDto } from './dto/create-locality.dto';
 import { UpdateLocalityDto } from './dto/update-locality.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('locality')
 @ApiBearerAuth()
@@ -10,6 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class LocalityController {
   constructor(private readonly localityService: LocalityService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createLocalityDto: CreateLocalityDto) {
     return this.localityService.create(createLocalityDto);
@@ -30,11 +33,13 @@ export class LocalityController {
     return this.localityService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateLocalityDto: UpdateLocalityDto) {
     return this.localityService.update(+id, updateLocalityDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.localityService.remove(+id);
@@ -50,6 +55,7 @@ export class LocalityController {
     return this.localityService.findDeleted();
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.localityService.restore(+id);

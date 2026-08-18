@@ -23,6 +23,7 @@ import {
 import { Taxon } from "@/lib/api/taxonomy";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { EditTaxonDialog } from "./EditTaxonDialog";
+import { CanWrite } from "@/components/CanWrite";
 
 interface TaxonDetailsSheetProps {
   open: boolean;
@@ -158,41 +159,43 @@ export function TaxonDetailsSheet({
                 </CardContent>
               </Card>
 
-              {/* Acciones */}
-              <Card className="border-0 shadow-sm bg-white">
-                <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
-                  <h3 className="font-medium text-slate-900 mb-4">Acciones</h3>
+              <CanWrite>
+                {/* Acciones */}
+                <Card className="border-0 shadow-sm bg-white">
+                  <CardContent className="p-2 xs:p-3 sm:p-4 -mt-4">
+                    <h3 className="font-medium text-slate-900 mb-4">Acciones</h3>
 
-                  <div className="space-y-1 xs:space-y-1.5 sm:space-y-2">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base"
-                      onClick={() => setEditDialogOpen(true)}
-                    >
-                      <Edit3 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
-                      <span className="font-medium">
-                        Editar información del taxón
-                      </span>
-                    </Button>
+                    <div className="space-y-1 xs:space-y-1.5 sm:space-y-2">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-10 xs:h-12 sm:h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors text-xs xs:text-sm sm:text-base"
+                        onClick={() => setEditDialogOpen(true)}
+                      >
+                        <Edit3 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3 text-slate-600" />
+                        <span className="font-medium">
+                          Editar información del taxón
+                        </span>
+                      </Button>
 
-                    <Separator className="my-3" />
+                      <Separator className="my-3" />
 
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-10 xs:h-12 sm:h-11 border-red-200 text-red-700 cursor-pointer text-xs xs:text-sm sm:text-base"
-                      onClick={() => {
-                        if (taxon && onDelete) {
-                          onDelete(taxon.id_taxon);
-                          onClose();
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
-                      <span className="font-medium">Eliminar taxón</span>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-10 xs:h-12 sm:h-11 border-red-200 text-red-700 cursor-pointer text-xs xs:text-sm sm:text-base"
+                        onClick={() => {
+                          if (taxon && onDelete) {
+                            onDelete(taxon.id_taxon);
+                            onClose();
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3 xs:h-4 xs:w-4 mr-1.5 xs:mr-2 sm:mr-3" />
+                        <span className="font-medium">Eliminar taxón</span>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CanWrite>
             </div>
           )}
         </SheetContent>

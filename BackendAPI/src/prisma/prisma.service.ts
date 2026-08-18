@@ -2,10 +2,10 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 /**
- * PrismaService with soft delete support via Client Extensions
- * Automatically filters deleted_at = null for all queries
- * Use { withDeleted: true } to include soft-deleted records
- * Use { forceDelete: true } to permanently delete records
+ * Cliente de Prisma con baja logica, resuelta con extensiones del cliente.
+ * Todas las consultas filtran solo por lo activo (deleted_at nulo).
+ * Para incluir lo dado de baja, pasar { withDeleted: true }.
+ * Para borrar de verdad, sin vuelta atras, pasar { forceDelete: true }.
  *
  * @example
  * // Normal query (excludes soft-deleted)
@@ -68,7 +68,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
             const withDeleted = customArgs.withDeleted === true;
             const forceDelete = customArgs.forceDelete === true;
 
-            // Clean custom flags
+            // Limpia las banderas propias para que no lleguen a Prisma
             if ('withDeleted' in customArgs) {
               delete customArgs.withDeleted;
             }
@@ -84,7 +84,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
               return query(customArgs);
             }
 
-            // Handle soft delete for delete operations
+            // Convierte los borrados en baja lógica
             if (operation === 'delete' && !forceDelete) {
               const { where, ...rest } = customArgs;
               return modelDelegate.update({
@@ -102,7 +102,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
               });
             }
 
-            // Add deleted_at filter for read operations (unless withDeleted is true)
+            // En las lecturas descarta lo dado de baja, salvo que pidan incluirlo
             if (
               !withDeleted &&
               ['findUnique', 'findUniqueOrThrow', 'findFirst', 'findFirstOrThrow', 'findMany', 'count', 'aggregate', 'groupBy', 'update', 'updateMany', 'upsert'].includes(operation)
@@ -122,10 +122,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       },
     });
 
-    // Type-cast and assign to avoid type errors
+    // Castea antes de asignar para que no proteste el tipado
     Object.assign(this, extended);
   }
 
+  // Abre la conexión con la base cuando arranca la aplicación.
   async onModuleInit() {
     await this.$connect();
   }

@@ -3,6 +3,8 @@ import { DepartmentService } from './department.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('department')
 @ApiBearerAuth()
@@ -10,6 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class DepartmentController {
   constructor(private readonly departmentService: DepartmentService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createDepartmentDto: CreateDepartmentDto) {
     return this.departmentService.create(createDepartmentDto);
@@ -30,11 +33,13 @@ export class DepartmentController {
     return this.departmentService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDepartmentDto: UpdateDepartmentDto) {
     return this.departmentService.update(+id, updateDepartmentDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.departmentService.remove(+id);
@@ -50,6 +55,7 @@ export class DepartmentController {
     return this.departmentService.findDeleted();
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.departmentService.restore(+id);

@@ -7,17 +7,20 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TaxonomicLevelService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un nivel taxonómico.
   create(createTaxonomicLevelDto: CreateTaxonomicLevelDto) {
     return this.prismaService.taxonomicLevel.create({
       data: createTaxonomicLevelDto,
     });
   }
 
+  // Lista los niveles taxonómicos activos.
   findAll() {
     return this.prismaService.taxonomicLevel.findMany({
       orderBy: { id_taxonomic_level: 'asc' },
     });
   }
+  // Lista los niveles taxonómicos que fueron dados de baja.
   findDeleted() {
     return (this.prismaService.taxonomicLevel.findMany as any)({
       where: {
@@ -28,6 +31,7 @@ export class TaxonomicLevelService {
     });
   }
 
+  // Busca un nivel taxonómico por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const taxonomicLevel = await this.prismaService.taxonomicLevel.findUnique({
       where: { id_taxonomic_level: id },
@@ -42,6 +46,7 @@ export class TaxonomicLevelService {
     return taxonomicLevel;
   }
 
+  // Actualiza los datos de un nivel taxonómico.
   async update(id: number, updateTaxonomicLevelDto: UpdateTaxonomicLevelDto) {
     try {
       return await this.prismaService.taxonomicLevel.update({
@@ -55,6 +60,7 @@ export class TaxonomicLevelService {
     }
   }
 
+  // Da de baja un nivel taxonómico. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.taxonomicLevel.delete({
@@ -66,6 +72,7 @@ export class TaxonomicLevelService {
       );
     }
   }
+  // Vuelve a activar un nivel taxonómico que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.taxonomicLevel.update as any)({
@@ -80,6 +87,7 @@ export class TaxonomicLevelService {
     }
   }
 
+  // Avisa si el nivel taxonómico está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     const observations = await this.prismaService.observation.findMany({
       where: {

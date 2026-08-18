@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CollectionService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta una colección.
   create(createCollectionDto: CreateCollectionDto) {
     return this.prismaService.collection.create({
       data: createCollectionDto,
@@ -18,6 +19,7 @@ export class CollectionService {
     });
   }
 
+  // Lista las colecciones activas.
   findAll() {
     return this.prismaService.collection.findMany({
       include: {
@@ -56,6 +58,7 @@ export class CollectionService {
     });
   }
 
+  // Busca una colección por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const collection = await this.prismaService.collection.findUnique({
       where: { id_collection: id },
@@ -101,6 +104,7 @@ export class CollectionService {
     return collection;
   }
   
+  // Lista las colecciones que juntó una persona.
   async findByPerson(personId: number) {
     return this.prismaService.collection.findMany({
       where: {
@@ -125,6 +129,7 @@ export class CollectionService {
     });
   }
 
+  // Lista las colecciones hechas entre dos fechas.
   async findByDateRange(startDate: Date, endDate: Date) {
     return this.prismaService.collection.findMany({
       where: {
@@ -152,6 +157,7 @@ export class CollectionService {
     });
   }
 
+  // Actualiza los datos de una colección.
   async update(id: number, updateCollectionDto: UpdateCollectionDto) {
     try {
       // Verificar que todos los campos requeridos existan en el DTO
@@ -221,6 +227,7 @@ export class CollectionService {
     }
   }
 
+  // Da de baja una colección. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.collection.delete({

@@ -3,6 +3,8 @@ import { ProvinceService } from './province.service';
 import { CreateProvinceDto } from './dto/create-province.dto';
 import { UpdateProvinceDto } from './dto/update-province.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('province')
 @ApiBearerAuth()
@@ -10,6 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class ProvinceController {
   constructor(private readonly provinceService: ProvinceService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createProvinceDto: CreateProvinceDto) {
     return this.provinceService.create(createProvinceDto);
@@ -30,11 +33,13 @@ export class ProvinceController {
     return this.provinceService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProvinceDto: UpdateProvinceDto) {
     return this.provinceService.update(+id, updateProvinceDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.provinceService.remove(+id);
@@ -50,6 +55,7 @@ export class ProvinceController {
     return this.provinceService.findDeleted();
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id/restore')
   restore(@Param('id') id: string) {
     return this.provinceService.restore(+id);

@@ -14,6 +14,7 @@ import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import Link from "next/link";
+import { CanWrite } from "@/components/CanWrite";
 
 interface Locality {
   id_locality: number;
@@ -223,10 +224,12 @@ export function LocalitiesClient({
             </div>
           </div>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Localidad
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Localidad
+          </Button>
+        </CanWrite>
       </div>
 
       <CreateLocalityDialog

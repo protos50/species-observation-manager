@@ -7,12 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class EnvironmentService {
   constructor(private prismaService: PrismaService) {}
 
+  // Da de alta un ambiente.
   create(createEnvironmentDto: CreateEnvironmentDto) {
     return this.prismaService.environment.create({
       data: createEnvironmentDto,
     });
   }
 
+  // Lista los ambientes activos.
   findAll() {
     return this.prismaService.environment.findMany({
       include: {
@@ -25,6 +27,7 @@ export class EnvironmentService {
     });
   }
 
+  // Busca un ambiente por id; si no lo encuentra, responde 404.
   async findOne(id: number) {
     const environment = await this.prismaService.environment.findUnique({
       where: { id_environment: id },
@@ -54,6 +57,7 @@ export class EnvironmentService {
     return environment;
   }
 
+  // Actualiza los datos de un ambiente.
   async update(id: number, updateEnvironmentDto: UpdateEnvironmentDto) {
     try {
       return await this.prismaService.environment.update({
@@ -65,6 +69,7 @@ export class EnvironmentService {
     }
   }
 
+  // Da de baja un ambiente. Es baja lógica: el registro queda en la base con su fecha de borrado.
   async remove(id: number) {
     try {
       return await this.prismaService.environment.delete({
@@ -75,6 +80,7 @@ export class EnvironmentService {
     }
   }
 
+  // Avisa si el ambiente está enganchado a otros registros, así no se borra algo que todavía se usa.
   async checkIfInUse(id: number) {
     const observations = await this.prismaService.observation.findMany({
       where: {
@@ -102,6 +108,7 @@ export class EnvironmentService {
     };
   }
 
+  // Lista los ambientes que fueron dados de baja.
   async findDeleted() {
     return await (this.prismaService.environment as any).findMany({
       withDeleted: true,
@@ -116,6 +123,7 @@ export class EnvironmentService {
     });
   }
 
+  // Vuelve a activar un ambiente que estaba dado de baja.
   async restore(id: number) {
     try {
       return await (this.prismaService.environment as any).update({

@@ -1,95 +1,143 @@
 # Species Observation Manager
 
-Sistema integral para gestionar observaciones biológicas, centralizar taxonomía y geolocalización, exponer una API estable y ofrecer un dashboard administrativo moderno. El backend corre sobre NestJS + Prisma + PostgreSQL y el frontend usa Next.js (App Router) con componentes reutilizables orientados a formularios científicos.@resumen_proyecto.md#5-54
+Sistema de gestión de colecciones biológicas para el Laboratorio de Zoología
+Agrícola (FaCENA – UNNE). Centraliza observaciones de campo, jerarquía
+taxonómica, geolocalización y datos climáticos, con una API REST documentada y
+un panel de administración web.
 
-## Arquitectura general
+En producción gestiona más de 1.000 observaciones reales con su cadena
+taxonómica completa.
 
-- **Backend**: NestJS 11, Prisma ORM y PostgreSQL. Usa JWT para autenticación y expone endpoints documentados; las operaciones críticas emplean funciones transaccionales y búsquedas avanzadas con múltiples filtros.@resumen_proyecto.md#11-73
-- **Frontend**: Next.js 15 con React 19, dashboard modular con formularios, listados y autenticación de usuarios.@resumen_proyecto.md#47-75
-- **Infraestructura**: Docker Compose orquesta PostgreSQL, API, frontend y Nginx como reverse proxy, cada uno con healthchecks y redes aisladas.@docker/docker-compose.yml#1-142
-
-## Requisitos
-
-| Herramienta | Versión recomendada |
-|-------------|---------------------|
-| Node.js     | ≥ 20.x |
-| npm         | ≥ 10.x |
-| PostgreSQL  | ≥ 15 (si no usas Docker) |
-| Docker & Docker Compose | Última versión estable |
-
-## Estructura de carpetas
+## Arquitectura
 
 ```
-proyecto_final/
-├── BackendAPI/   # NestJS + Prisma API
-├── proyecto/     # Next.js dashboard
-├── docker/       # Dockerfiles, compose y configuración de infraestructura
-└── scripts/      # Utilidades de datos y despliegue
+Cliente (navegador)
+        │  HTTPS
+        ▼
+     Nginx  ── reverse proxy · rate limiting · security headers
+        │
+        ├──────────────► Frontend Next.js 15  (React 19, App Router)
+        │
+        └──── /api/* ──► Backend NestJS 11
+                              │  JwtAuthGuard → RolesGuard → Controllers
+                              │  Services → PrismaService
+                              ▼
+                         PostgreSQL 18
 ```
 
-## Configuración de variables de entorno
+| Capa | Tecnología |
+|---|---|
+| Backend | NestJS 11, TypeScript 5.7, Prisma 6.5 |
+| Base de datos | PostgreSQL 18 |
+| Frontend | Next.js 15, React 19, NextAuth v5, Tailwind, shadcn/ui |
+| Infraestructura | Docker Compose, Nginx, PM2 |
+| Autenticación | JWT (access + refresh), bcrypt (10 salt rounds) |
 
-1. Copia `backup.env.production` a un nuevo archivo `.env` en la raíz del proyecto:
-   ```bash
-   cp backup.env.production .env
-   ```
-2. Ajusta valores críticos (tokens JWT, credenciales de BD, claves NextAuth/Recaptcha, dominios de CORS, etc.). El mismo `.env` se usará para desarrollo local y para Docker Compose (se pasa con `--env-file`).
+## Estructura
 
-> **Tip:** Prisma usa `DATABASE_URL` en `BackendAPI/.env`. Puedes reutilizar la misma cadena desde el archivo raíz o crear un archivo específico dentro de `BackendAPI`.
+```
+├── BackendAPI/   API NestJS: 22 controllers, 15 módulos de dominio,
+│                 esquema y migraciones de Prisma
+├── proyecto/     Dashboard Next.js
+├── docker/       Dockerfiles, docker-compose y configuración de Nginx
+├── scripts/      Utilidades de importación, respaldo y despliegue
+└── docs/         Documentación técnica
+```
 
-## Desarrollo local (sin Docker)
+## Roles y permisos
 
-### 1. Backend API
+El sistema define tres perfiles. La autorización se aplica en el backend
+mediante `RolesGuard` + el decorador `@Roles(...)`; el frontend solo oculta la
+interfaz que no corresponde.
+
+| Perfil | `role_id` | Permisos |
+|---|---|---|
+| **Administrador** | 1 | Acceso total: usuarios, roles, servicios, bandeja de contacto, restauración y borrado físico |
+| **Colaborador** (`RESEARCHER`) | 3 | Crea y edita observaciones, colecciones, taxones, ubicaciones y datos maestros. Búsqueda avanzada y exportación |
+| **Consulta** (`USER`) | 2 | Solo lectura de los datos científicos |
+
+Endpoints públicos, sin autenticación:
+
+- `POST /api/auth/login` y `POST /api/auth/register`
+- `POST /api/contact` — formulario público de contacto
+- `GET /api/service` — listado público de servicios
+
+## Puesta en marcha
+
+### Con Docker (recomendado)
+
+```bash
+cd docker
+cp .env.example .env      # completar con valores reales
+docker compose up -d --build
+```
+
+La aplicación queda en `http://localhost`. El backend no expone su puerto al
+host: todo el tráfico entra por Nginx.
+
+### Desarrollo local
+
+**Backend**
+
 ```bash
 cd BackendAPI
+cp .env.example .env      # configurar DATABASE_URL y los secretos JWT
 npm install
-npx prisma migrate dev
-npm run start:dev
+npx prisma migrate deploy
+npm run start:dev         # http://localhost:4000
 ```
-El backend expone los endpoints en `http://localhost:4000` y requiere que la variable `DATABASE_URL` apunte a tu instancia local de PostgreSQL.@resumen_proyecto.md#43-75
 
-### 2. Frontend (Next.js)
+Documentación OpenAPI en `http://localhost:4000/docs`.
+
+**Frontend**
+
 ```bash
 cd proyecto
+cp .env.example .env      # generar AUTH_SECRET con: npx auth secret
 npm install
-npm run dev
+npm run dev               # http://localhost:3000
 ```
-La app correrá en `http://localhost:3000` y espera que el backend esté accesible para completar los flujos del dashboard.@resumen_proyecto.md#47-75
 
-## Ejecución con Docker Compose
+## Variables de entorno
 
-Todos los servicios productivos (PostgreSQL, API, frontend y Nginx) están definidos en `docker/docker-compose.yml`.@docker/docker-compose.yml#1-142
+Ningún archivo `.env` se versiona. Cada carpeta trae su plantilla:
 
-1. Asegúrate de tener el archivo `.env` en la raíz con todas las variables usadas por Compose (`POSTGRES_*`, `JWT_*`, `NEXTAUTH_*`, `AUTH_*`, `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, etc.).
-2. Desde la raíz del proyecto, levanta los servicios:
-   ```bash
-   docker compose -f docker/docker-compose.yml --env-file .env up -d --build
-   ```
-3. Servicios expuestos:
-   - **Nginx (80/443)**: proxy que enruta `/api` hacia el backend y el resto hacia el frontend.
-   - **Frontend (3000 interno)**: Next.js en modo producción, salud verificada mediante `wget` en `http://localhost:3000`.@docker/docker-compose.yml#57-93
-   - **Backend (4000 interno)**: NestJS sirviendo la API; healthcheck en `/api/auth/status`.@docker/docker-compose.yml#23-56
-   - **PostgreSQL (sin puerto público)**: acceso sólo desde la red interna `animal_register_database`; usa `docker exec -it animal_register_db psql ...` si necesitas conectarte.@docker/docker-compose.yml#1-22
+| Plantilla | Para qué |
+|---|---|
+| `BackendAPI/.env.example` | Desarrollo local del backend |
+| `proyecto/.env.example` | Desarrollo local del frontend |
+| `docker/.env.example` | Stack completo con build local |
+| `docker/third_party/.env.example` | Stack usando imágenes publicadas |
 
-4. Para revisar logs:
-   ```bash
-   docker compose -f docker/docker-compose.yml logs -f backend
-   docker compose -f docker/docker-compose.yml logs -f frontend
-   docker compose -f docker/docker-compose.yml logs -f nginx
-   ```
+Generar secretos robustos:
 
-5. Para detener y limpiar contenedores conservando volúmenes:
-   ```bash
-   docker compose -f docker/docker-compose.yml down
-   ```
-   Agrega `-v` si también deseas borrar los volúmenes (`postgres_data`, `backend_logs`, `frontend_logs`, `nginx_logs`).@docker/docker-compose.yml#129-140
+```bash
+openssl rand -base64 48   # JWT_SECRET_KEY, JWT_REFRESH_TOKEN
+npx auth secret           # AUTH_SECRET / NEXTAUTH_SECRET
+```
 
-## Scripts útiles
+## Documentación
 
-En `scripts/` hay utilidades para respaldar/restaurar la base de datos, crear usuarios administradores, ejecutar importaciones CSV/ODS y automatizar despliegues rápidos. Revisa el README individual dentro de esa carpeta para instrucciones detalladas.
+| Documento | Qué contiene |
+|---|---|
+| [Resumen del proyecto](./resumen_proyecto.md) | Qué problema resuelve y cómo, sin entrar en el detalle técnico |
+| [Documentación de la API](./BackendAPI/docs/README.md) | Endpoints, modelos, esquemas y seguridad |
+| [Modelo de datos](./modelo_datos_gema.md) | Diagrama entidad-relación de las 20 tablas |
+| [Despliegue con Docker](./docker/README.md) | Build de las imágenes y orquestación |
+| [Scripts](./scripts/README.md) | Importación desde ODS/CSV, respaldos y utilidades |
 
-## Próximos pasos
+Con el backend levantado, la referencia interactiva de Swagger queda en
+`http://localhost:4000/docs`.
 
-- Conectar completamente el frontend con todos los endpoints (listas, formularios, búsqueda avanzada con filtros).
-- Ejecutar pruebas end-to-end y publicar la búsqueda avanzada en la UI.
-- Mantener la documentación API actualizada y enlazada en este README.@resumen_proyecto.md#55-95
+## Pruebas
+
+```bash
+cd BackendAPI
+npm test          # unitarias
+npm run test:e2e  # end to end
+```
+
+## Licencia
+
+Proyecto académico desarrollado como Práctica Profesional Supervisada,
+Licenciatura en Sistemas de Información — FaCENA, UNNE.

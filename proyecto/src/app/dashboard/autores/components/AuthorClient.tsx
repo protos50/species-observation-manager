@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import { toast } from "sonner";
+import { CanWrite, withoutActionsColumn } from "@/components/CanWrite";
+import { useRoleAuth } from "@/hooks/use-role-auth";
 
 type Author = {
   id_author: number;
@@ -26,6 +28,7 @@ interface AuthorClientProps {
 }
 
 export function AuthorClient({ authors: initialAuthors }: AuthorClientProps) {
+  const { canWrite } = useRoleAuth();
   const [activeAuthors, setActiveAuthors] = useState<Author[]>(initialAuthors);
   const [deletedAuthors, setDeletedAuthors] = useState<Author[]>([]);
   const [loading, setLoading] = useState(false);
@@ -160,13 +163,19 @@ export function AuthorClient({ authors: initialAuthors }: AuthorClientProps) {
   }, []);
 
   const columns = useMemo<ColumnDef<Author>[]>(
-    () => getColumns(handleAuthorAction, handleEdit),
-    [handleAuthorAction, handleEdit]
+    () => {
+      const cols = getColumns(handleAuthorAction, handleEdit);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleAuthorAction, handleEdit, canWrite]
   );
 
   const deletedColumns = useMemo<ColumnDef<Author>[]>(
-    () => getDeletedColumns(handleAuthorAction),
-    [handleAuthorAction]
+    () => {
+      const cols = getDeletedColumns(handleAuthorAction);
+      return canWrite() ? cols : withoutActionsColumn(cols);
+    },
+    [handleAuthorAction, canWrite]
   );
 
   const activosCount = activeAuthors.length;
@@ -188,7 +197,9 @@ export function AuthorClient({ authors: initialAuthors }: AuthorClientProps) {
             Autores Científicos
           </h2>
         </div>
-        <CreateAuthorDialog onAuthorCreated={handleAuthorCreated} />
+        <CanWrite>
+          <CreateAuthorDialog onAuthorCreated={handleAuthorCreated} />
+        </CanWrite>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

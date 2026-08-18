@@ -3,6 +3,8 @@ import { CollectionService } from './collection.service';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { WRITE_ROLES } from '../../auth/enums/role.enum';
 
 @ApiTags('collection')
 @ApiBearerAuth()
@@ -10,6 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class CollectionController {
   constructor(private readonly collectionService: CollectionService) {}
 
+  @Roles(...WRITE_ROLES)
   @Post()
   create(@Body() createCollectionDto: CreateCollectionDto) {
     return this.collectionService.create(createCollectionDto);
@@ -38,16 +41,19 @@ export class CollectionController {
     return this.collectionService.findOne(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCollectionDto: UpdateCollectionDto) {
     return this.collectionService.update(+id, updateCollectionDto);
   }
 
+  @Roles(...WRITE_ROLES)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.collectionService.remove(+id);
   }
 
+  @Roles(...WRITE_ROLES)
   @Post('with-observation')
   addCollectionWithObservation(
     @Body('id_person') personId: number,

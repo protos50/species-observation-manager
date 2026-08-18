@@ -52,8 +52,8 @@ Las observaciones pueden asociarse a una geolocalización mediante los campos:
 
 ## Documentación Extendida
 
-- [Documentación de API y ejemplos de endpoints](./docs/api/README.md)
-- [Documentación de funciones almacenadas y modelo de datos](./docs/database/README.md)
+- [Índice de la documentación](./docs/README.md)
+- [Modelo de datos](./docs/models/README.md) y [listado de endpoints](./docs/ENDPOINTS.md)
 - [Arquitectura y decisiones de diseño](./docs/architecture/README.md)
 - [Modelos y ejemplos de uso](./docs/models/README.md)
 

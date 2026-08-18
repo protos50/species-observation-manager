@@ -14,6 +14,7 @@ import { InUseAlertDialog } from "@/components/InUseAlertDialog";
 import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import Link from "next/link";
+import { CanWrite } from "@/components/CanWrite";
 
 interface Department {
   id_department: number;
@@ -230,10 +231,12 @@ export function DepartmentsClient({
             </div>
           </div>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Departamento
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Departamento
+          </Button>
+        </CanWrite>
       </div>
 
       <CreateDepartmentDialog

@@ -38,7 +38,11 @@ services:
       - backend_network
       - database_network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/api/auth/status"]
+      # /api/auth/status esta protegido por el JwtAuthGuard y responde 401 sin token.
+      # Con `wget --spider` a secas ese 401 se toma como fallo y el contenedor queda
+      # unhealthy de forma permanente aunque el backend funcione. Aceptamos 200 o 401
+      # como senal de vida: si el proceso contesta HTTP, esta sano.
+      test: ["CMD-SHELL", "wget -q --spider -S http://localhost:4000/api/auth/status 2>&1 | grep -qE 'HTTP/1.1 (200|401)'"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -13,6 +13,7 @@ import ResponsiveDataList from "@/components/ResponsiveDataList";
 import { locationApi } from "@/lib/api/location";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { CanWrite } from "@/components/CanWrite";
 
 interface Country {
   id_country: number;
@@ -200,10 +201,12 @@ export function CountriesClient({ initialCountries }: CountriesClientProps) {
             Países
           </h2>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo País
-        </Button>
+        <CanWrite>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo País
+          </Button>
+        </CanWrite>
       </div>
 
       <CreateCountryDialog
