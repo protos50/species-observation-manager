@@ -9,7 +9,7 @@
 
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
-| POST | `/auth/register` | Registrar nuevo usuario | No |
+| POST | `/auth/register` | Registrar nuevo usuario (solo ADMIN) | Sí |
 | POST | `/auth/login` | Iniciar sesión | No |
 
 ---
