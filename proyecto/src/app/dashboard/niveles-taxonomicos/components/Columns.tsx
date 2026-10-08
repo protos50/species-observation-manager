@@ -26,6 +26,15 @@ export function getColumns(
 ): ColumnDef<TaxonomicLevel>[] {
   return [
     {
+      id: "position",
+      header: "Posición",
+      // Los niveles activos llegan ordenados de arriba hacia abajo en la jerarquía
+      accessorFn: (_level, index) => index + 1,
+      meta: {
+        align: "center",
+      },
+    },
+    {
       accessorKey: "name",
       header: "Nombre de nivel taxonómico",
       meta: {

@@ -30,6 +30,8 @@ model User {
 model TaxonomicLevel {
   id_taxonomic_level Int       @id(map: "pk_taxonomic_level") @default(autoincrement())
   name               String    @unique @db.VarChar(50)
+  /// Posición en la jerarquía: un número menor va más arriba (Kingdom antes que Species).
+  level_order        Int
   deleted_at         DateTime? @db.Timestamptz(6)
   Taxon              Taxon[]
 }

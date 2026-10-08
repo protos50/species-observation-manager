@@ -104,14 +104,14 @@ export function EditTaxonDialog({
       // Como padre sirve cualquier taxon de un nivel superior, no solo el
       // inmediato de arriba: la clasificacion cargada se saltea niveles.
       // Filtrar por nivel superior tambien evita ciclos, porque los
-      // descendientes siempre estan en un nivel mas bajo.
+      // descendientes siempre estan en un nivel mas bajo. Que un nivel sea
+      // superior lo dice su posicion (level_order), no el id.
       if (taxon) {
-        const currentLevelId =
-          taxon.id_taxonomic_level ?? taxon.taxonomic_level?.id_taxonomic_level;
+        const currentOrder = taxon.taxonomic_level?.level_order;
         setParentTaxa(
-          currentLevelId
+          currentOrder !== undefined
             ? allTaxa
-                .filter((t) => t.id_taxonomic_level < currentLevelId)
+                .filter((t) => t.taxonomic_level.level_order < currentOrder)
                 .filter((t) => t.id_taxon !== taxon.id_taxon)
             : []
         );
@@ -155,7 +155,9 @@ export function EditTaxonDialog({
       if (onTaxonUpdated) onTaxonUpdated(updatedTaxon);
     } catch (error) {
       console.error("Error al actualizar taxón:", error);
-      toast.error("Error al actualizar el taxón");
+      toast.error(
+        error instanceof Error ? error.message : "Error al actualizar el taxón"
+      );
     } finally {
       setLoading(false);
     }
@@ -167,14 +169,18 @@ export function EditTaxonDialog({
     if (!open) return;
     if (selectedLevelId) {
       // Ofrecemos todos los taxones de niveles superiores al elegido
-      taxonomyApi.taxa
-        .getAll()
-        .then((todos) => {
+      Promise.all([taxonomyApi.levels.getAll(), taxonomyApi.taxa.getAll()])
+        .then(([levels, todos]) => {
+          const nivel = levels.find(
+            (l) => l.id_taxonomic_level === selectedLevelId
+          );
+          // Un nivel dado de baja no figura entre los activos: se deja todo como está
+          if (!nivel) return;
           const list = todos
-            .filter((t) => t.id_taxonomic_level < selectedLevelId)
+            .filter((t) => t.taxonomic_level.level_order < nivel.level_order)
             .sort(
               (a, b) =>
-                a.id_taxonomic_level - b.id_taxonomic_level ||
+                a.taxonomic_level.level_order - b.taxonomic_level.level_order ||
                 a.name.localeCompare(b.name)
             );
           // Evitar seleccionarse a sí mismo si estamos editando

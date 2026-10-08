@@ -81,15 +81,20 @@ export function CreateTaxonDialog({ onTaxonCreated }: CreateTaxonDialogProps) {
     }
   }, [open]);
 
-  // Cargar taxones padre cuando cambia el nivel taxonómico
+  // Cargar taxones padre cuando cambia el nivel taxonómico. Que un nivel sea
+  // superior lo dice su posicion (level_order), no el id: un nivel creado
+  // despues puede ir en el medio de la jerarquia.
   const selectedLevelId = form.watch("id_taxonomic_level");
+  const selectedLevelOrder = taxonomicLevels.find(
+    (l) => l.id_taxonomic_level === selectedLevelId
+  )?.level_order;
   useEffect(() => {
-    if (selectedLevelId) {
-      loadParentTaxa(selectedLevelId);
+    if (selectedLevelOrder !== undefined) {
+      loadParentTaxa(selectedLevelOrder);
     } else {
       setParentTaxa([]);
     }
-  }, [selectedLevelId]);
+  }, [selectedLevelOrder]);
 
   const loadTaxonomicLevels = async () => {
     try {
@@ -100,7 +105,7 @@ export function CreateTaxonDialog({ onTaxonCreated }: CreateTaxonDialogProps) {
     }
   };
 
-  const loadParentTaxa = async (levelId: number) => {
+  const loadParentTaxa = async (levelOrder: number) => {
     try {
       // Sirve como padre cualquier taxon de un nivel superior, no solo el
       // inmediato de arriba. La clasificacion real suele saltearse niveles:
@@ -110,10 +115,10 @@ export function CreateTaxonDialog({ onTaxonCreated }: CreateTaxonDialogProps) {
       // engancharlos desde la interfaz.
       const todos = await taxonomyApi.taxa.getAll();
       const superiores = todos
-        .filter((t) => t.id_taxonomic_level < levelId)
+        .filter((t) => t.taxonomic_level.level_order < levelOrder)
         .sort(
           (a, b) =>
-            a.id_taxonomic_level - b.id_taxonomic_level ||
+            a.taxonomic_level.level_order - b.taxonomic_level.level_order ||
             a.name.localeCompare(b.name)
         );
       setParentTaxa(superiores);

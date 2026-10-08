@@ -20,19 +20,31 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 
 import { taxonomyApi } from "@/lib/api/taxonomy";
 import { z } from "zod";
 
+// Valor del selector para un nivel que no va debajo de ningún otro
+const PRIMERO = "primero";
+
 type FormValues = {
   name: string;
+  above: string;
 };
 
 type TaxonomicLevel = {
@@ -41,10 +53,13 @@ type TaxonomicLevel = {
 };
 
 interface CreateLevelTaxonDialogProps {
+  // Niveles activos, de arriba hacia abajo en la jerarquía
+  levels: TaxonomicLevel[];
   onLevelTaxonCreated?: (newLevelTaxon: TaxonomicLevel) => void;
 }
 
 export function CreateLevelTaxonDialog({
+  levels,
   onLevelTaxonCreated,
 }: CreateLevelTaxonDialogProps) {
   const [open, setOpen] = useState(false);
@@ -53,17 +68,33 @@ export function CreateLevelTaxonDialog({
     resolver: zodResolver(
       z.object({
         name: z.string().min(3),
+        above: z.string(),
       })
     ),
     defaultValues: {
       name: "",
+      above: PRIMERO,
     },
   });
+
+  // Por defecto el nivel nuevo va último, debajo del que hoy está más abajo
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen) {
+      const ultimo = levels[levels.length - 1];
+      form.reset({
+        name: "",
+        above: ultimo ? ultimo.id_taxonomic_level.toString() : PRIMERO,
+      });
+    }
+  };
 
   const onSubmit = async (values: FormValues) => {
     try {
       const newLevelTaxon = await taxonomyApi.levels.create({
         name: values.name,
+        above_level_id:
+          values.above === PRIMERO ? null : parseInt(values.above),
       });
 
       toast.success("Nivel taxonómico creado con éxito");
@@ -78,7 +109,7 @@ export function CreateLevelTaxonDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="cursor-pointer">
           <PlusCircle className="mr-2" />
@@ -90,7 +121,8 @@ export function CreateLevelTaxonDialog({
         <DialogHeader>
           <DialogTitle>Crear Nivel Taxonómico</DialogTitle>
           <DialogDescription>
-            Ingrese el nombre del nuevo nivel taxonómico.
+            Ingrese el nombre del nuevo nivel taxonómico y dónde va en la
+            jerarquía.
           </DialogDescription>
         </DialogHeader>
         <Separator className="my-2" />
@@ -106,6 +138,39 @@ export function CreateLevelTaxonDialog({
                   <FormControl>
                     <Input placeholder="Ejemplo: Reino" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="above"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Va debajo de</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un nivel" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={PRIMERO}>Ninguno (va primero)</SelectItem>
+                      {levels.map((l) => (
+                        <SelectItem
+                          key={l.id_taxonomic_level}
+                          value={l.id_taxonomic_level.toString()}
+                        >
+                          {l.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Elija el nivel que queda justo arriba. Por ejemplo, Superfamily
+                    va debajo de Order.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

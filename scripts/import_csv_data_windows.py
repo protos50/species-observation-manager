@@ -119,10 +119,13 @@ class DataImporter:
             if result:
                 self.cache['taxonomic_level'][level_name] = result['id_taxonomic_level']
             else:
-                # Insertar nuevo nivel (sin level_order ya que no existe en el schema)
+                # Insertar nuevo nivel al final de la jerarquía: la lista de
+                # arriba va en orden, del nivel más alto al más bajo
                 self.cursor.execute(
-                    '''INSERT INTO public."TaxonomicLevel" (name)
-                       VALUES (%s) RETURNING id_taxonomic_level''',
+                    '''INSERT INTO public."TaxonomicLevel" (name, level_order)
+                       SELECT %s, COALESCE(MAX(level_order), 0) + 1
+                       FROM public."TaxonomicLevel"
+                       RETURNING id_taxonomic_level''',
                     (level_name,)
                 )
                 self.cache['taxonomic_level'][level_name] = self.cursor.fetchone()['id_taxonomic_level']
