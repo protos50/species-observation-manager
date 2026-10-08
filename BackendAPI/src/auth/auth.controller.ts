@@ -5,6 +5,8 @@ import { UsersService } from 'src/users/users.service'
 import { LoginDto } from './dto/auth.dto'
 import { AuthService } from './auth.service'
 import { Public } from './decorators/public.decorator'
+import { Roles } from './decorators/roles.decorator'
+import { Role } from './enums/role.enum'
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -15,7 +17,9 @@ export class AuthController {
     private authService: AuthService,
   ) {}
 
-  @Public()
+  // El registro guarda el role_id que llega en el cuerpo, asi que solo puede
+  // usarlo un administrador. Es el mismo alta que POST /api/users.
+  @Roles(Role.ADMIN)
   @Post('register')
   async registerUser(@Body() dto: CreateUserDto) {
     return await this.usersService.create(dto)

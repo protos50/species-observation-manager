@@ -224,7 +224,7 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 
 | Método | Ruta | Descripción | Requiere Auth |
 |--------|------|-------------|---------------|
-| POST | `/auth/register` | Crear cuenta | No |
+| POST | `/auth/register` | Crear cuenta (solo ADMIN) | Sí |
 | POST | `/auth/login` | Iniciar sesión | No |
 | POST | `/auth/refresh` | Renovar tokens | No (requiere refresh_token) |
 | POST | `/auth/logout` | Cerrar sesión | Sí |

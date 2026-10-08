@@ -58,7 +58,7 @@ interfaz que no corresponde.
 
 Endpoints públicos, sin autenticación:
 
-- `POST /api/auth/login` y `POST /api/auth/register`
+- `POST /api/auth/login` (las cuentas las crea un administrador)
 - `POST /api/contact` — formulario público de contacto
 - `GET /api/service` — listado público de servicios
 
