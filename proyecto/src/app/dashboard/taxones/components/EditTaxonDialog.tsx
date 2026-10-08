@@ -196,11 +196,10 @@ export function EditTaxonDialog({
         })
         .catch(() => toast.error("Error al cargar taxones padre"));
     } else {
+      // Al abrir el dialogo este efecto corre antes de que el formulario
+      // reciba los datos del taxon, todavia sin nivel elegido. No hay que
+      // limpiar el padre: se perderia al guardar.
       setParentTaxa([]);
-      form.setValue("parent_id", null, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
     }
   }, [selectedLevelId, open, taxon, form]);
 
