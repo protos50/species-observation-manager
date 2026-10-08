@@ -129,10 +129,8 @@ export function LevelTaxonClient({
             setDeletedLevelTaxons((prev) =>
               prev.filter((l) => l.id_taxonomic_level !== levelId)
             );
-            setActiveLevelTaxons((prev) => [
-              ...prev,
-              { ...levelToRestore, deleted_at: undefined },
-            ]);
+            // Vuelve a su lugar en la jerarquía, que no tiene por qué ser el último
+            await loadActiveLevels();
           }
         }
       } catch (error) {
@@ -147,24 +145,16 @@ export function LevelTaxonClient({
     [activeLevelTaxons, deletedLevelTaxons, loadActiveLevels, loadDeletedLevels, handleDeleteClick]
   );
 
-  // Método creado
-  const handleLevelTaxonCreated = useCallback(
-    async (newLevelTaxon: TaxonomicLevel) => {
-      setActiveLevelTaxons((prev) => [...prev, newLevelTaxon]);
-    },
-    []
-  );
+  // Método creado. Se recarga la lista porque el nivel nuevo puede ir en el
+  // medio de la jerarquía y correr a los de abajo.
+  const handleLevelTaxonCreated = useCallback(async () => {
+    await loadActiveLevels();
+  }, [loadActiveLevels]);
 
-  // Método editado
-  const handleLevelUpdated = useCallback(async (updatedLevel: TaxonomicLevel) => {
-    setActiveLevelTaxons((prev) =>
-      prev.map((level) =>
-        level.id_taxonomic_level === updatedLevel.id_taxonomic_level
-          ? updatedLevel
-          : level
-      )
-    );
-  }, []);
+  // Método editado. Se recarga por si el nivel cambió de lugar.
+  const handleLevelUpdated = useCallback(async () => {
+    await loadActiveLevels();
+  }, [loadActiveLevels]);
 
   // Editar
   const handleEdit = useCallback((level: TaxonomicLevel) => {
@@ -214,7 +204,10 @@ export function LevelTaxonClient({
           </h2>
         </div>
         <CanWrite>
-          <CreateLevelTaxonDialog onLevelTaxonCreated={handleLevelTaxonCreated} />
+          <CreateLevelTaxonDialog
+            levels={activeLevelTaxons}
+            onLevelTaxonCreated={handleLevelTaxonCreated}
+          />
         </CanWrite>
       </div>
 
@@ -277,6 +270,7 @@ export function LevelTaxonClient({
         open={isEditDialogOpen}
         onOpenChange={handleCloseEditDialog}
         level={editingLevel}
+        levels={activeLevelTaxons}
         onLevelUpdated={handleLevelUpdated}
       />
 

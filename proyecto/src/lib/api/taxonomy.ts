@@ -3,6 +3,8 @@ import { API_BASE_URL, handleResponse, createHeaders } from "./config";
 export interface TaxonomicLevel {
   id_taxonomic_level: number;
   name: string;
+  // Posición en la jerarquía: cuanto más chico, más arriba
+  level_order: number;
 }
 
 export interface Taxon {
@@ -22,6 +24,8 @@ export interface Taxon {
 
 export interface CreateTaxonomicLevelData {
   name: string;
+  // Nivel que queda justo arriba del nuevo; null lo pone primero
+  above_level_id?: number | null;
 }
 
 export interface CreateTaxonData {
@@ -33,6 +37,8 @@ export interface CreateTaxonData {
 
 export interface UpdateTaxonomicLevelData {
   name?: string;
+  // Si viene, el nivel se mueve justo debajo de este; null lo pone primero
+  above_level_id?: number | null;
 }
 
 export interface UpdateTaxonData {

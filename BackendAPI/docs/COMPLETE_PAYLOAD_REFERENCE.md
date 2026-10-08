@@ -107,9 +107,12 @@ PATCH /api/users/:id
 ```json
 POST /api/taxonomic-level
 {
-  "name": "Species"
+  "name": "Superfamily",
+  "above_level_id": 4
 }
 ```
+
+`above_level_id` is optional: the new level goes right below that level (`null` puts it first). Without it, the level goes last.
 
 #### Update Taxonomic Level
 ```json
@@ -119,13 +122,18 @@ PATCH /api/taxonomic-level/:id
 }
 ```
 
+Sending `above_level_id` also moves the level right below that one. The move is rejected with 400 if a taxon of this level would end up above its parent or below one of its children.
+
 #### Response Structure
 ```json
 {
   "id_taxonomic_level": 1,
-  "name": "Species"
+  "name": "Species",
+  "level_order": 9
 }
 ```
+
+`level_order` is the level's position in the hierarchy: lower values are higher up (Kingdom before Species).
 
 ### 🐛 Taxon
 
@@ -153,6 +161,8 @@ POST /api/taxon
   "parent_id": 5
 }
 ```
+
+The parent must belong to a higher level (lower `level_order`) than the taxon; otherwise the API answers 400.
 
 #### Update Taxon
 ```json
@@ -889,7 +899,7 @@ PUT /api/geolocation/:id/restore
 |-------|----------------|-----------------|
 | **Rol** | name | description |
 | **User** | first_name, last_name, email, password, role_id | deleted_at |
-| **TaxonomicLevel** | name | - |
+| **TaxonomicLevel** | name | above_level_id |
 | **Taxon** | name, id_taxonomic_level | parent_id |
 | **Environment** | environment_name | - |
 | **Trap** | trap_name | - |

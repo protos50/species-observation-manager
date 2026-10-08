@@ -24,6 +24,7 @@ erDiagram
     TaxonomicLevel {
         int id_taxonomic_level PK
         string name UK
+        int level_order
     }
     
     Taxon {

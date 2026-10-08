@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTaxonDto } from './dto/create-taxon.dto';
 import { UpdateTaxonDto } from './dto/update-taxon.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,7 +12,11 @@ export class TaxonService {
   constructor(private prismaService: PrismaService) {}
 
   // Da de alta un taxón.
-  create(createTaxonDto: CreateTaxonDto) {
+  async create(createTaxonDto: CreateTaxonDto) {
+    await this.checkHierarchy(
+      createTaxonDto.id_taxonomic_level,
+      createTaxonDto.parent_id,
+    );
     return this.prismaService.taxon.create({
       data: createTaxonDto,
     });
@@ -58,6 +66,27 @@ export class TaxonService {
 
   // Actualiza los datos de un taxón.
   async update(id: number, updateTaxonDto: UpdateTaxonDto) {
+    const current = await this.prismaService.taxon.findUnique({
+      where: { id_taxon: id },
+    });
+    if (!current) {
+      throw new NotFoundException(`Taxón con ID ${id} no encontrado`);
+    }
+
+    // Solo se valida la jerarquía si cambia el nivel o el padre
+    const levelId =
+      updateTaxonDto.id_taxonomic_level ?? current.id_taxonomic_level;
+    const parentId =
+      updateTaxonDto.parent_id === undefined
+        ? current.parent_id
+        : updateTaxonDto.parent_id;
+    if (
+      levelId !== current.id_taxonomic_level ||
+      parentId !== current.parent_id
+    ) {
+      await this.checkHierarchy(levelId, parentId, id);
+    }
+
     try {
       return await this.prismaService.taxon.update({
         where: { id_taxon: id },
@@ -65,6 +94,55 @@ export class TaxonService {
       });
     } catch (error) {
       throw new NotFoundException(`Taxón con ID ${id} no encontrado`);
+    }
+  }
+
+  // El padre tiene que estar en un nivel más alto que el del taxón y los hijos en
+  // uno más bajo. Así el árbol respeta el orden de los niveles y no puede formar ciclos.
+  private async checkHierarchy(
+    levelId: number,
+    parentId?: number | null,
+    taxonId?: number,
+  ) {
+    const level = await this.prismaService.taxonomicLevel.findUnique({
+      where: { id_taxonomic_level: levelId },
+    });
+    if (!level) {
+      throw new BadRequestException(
+        `Nivel taxonómico con ID ${levelId} no encontrado`,
+      );
+    }
+
+    if (parentId) {
+      const parent = await this.prismaService.taxon.findUnique({
+        where: { id_taxon: parentId },
+        include: { taxonomic_level: true },
+      });
+      if (!parent) {
+        throw new BadRequestException(
+          `Taxón padre con ID ${parentId} no encontrado`,
+        );
+      }
+      if (parent.taxonomic_level.level_order >= level.level_order) {
+        throw new BadRequestException(
+          `${parent.name} (${parent.taxonomic_level.name}) no puede ser padre de un taxón de nivel ${level.name}: tiene que estar en un nivel más alto`,
+        );
+      }
+    }
+
+    if (taxonId !== undefined) {
+      const child = await this.prismaService.taxon.findFirst({
+        where: {
+          parent_id: taxonId,
+          taxonomic_level: { level_order: { lte: level.level_order } },
+        },
+        select: { name: true },
+      });
+      if (child) {
+        throw new BadRequestException(
+          `El taxón no puede pasar al nivel ${level.name}: su hijo ${child.name} quedaría en un nivel igual o más alto`,
+        );
+      }
     }
   }
 
